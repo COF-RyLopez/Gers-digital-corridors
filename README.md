@@ -16,5 +16,12 @@ Data sources: Iowa DOT public ArcGIS services (CARS 511 multi-state views + Miss
 and Overture Maps release 2026-11-18.0 (transportation + divisions themes).
 Event data is a snapshot fetched 2026-11-22.
 
+## Adopt this for your state
+
+- **[PLAYBOOK.md](PLAYBOOK.md)** — the replication recipe: tag your feed, read the
+  match report, publish, join your neighbors. ~a day of work.
+- **`tools/gers_tagger.py`** — the one-file CLI that does the conflation:
+  feed URL in, GERS-tagged feed + match report out.
+
 Serve locally: `python3 -m http.server` from this directory, or enable GitHub Pages
 (root of `main`).
