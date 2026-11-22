@@ -73,15 +73,15 @@ footer{padding-block:30px 44px;color:var(--muted);font-size:12.5px;border-top:1p
 
 <div class="wrap">
 <header>
-  <div class="kicker">Overture Maps Foundation · Internal strategy brief</div>
+  <div class="kicker">Overture Maps Foundation community · Discussion draft</div>
   <h1>GERS as the join key for USDOT's Digital Corridors</h1>
   <p class="standfirst">Deep-dive research on the Digital Corridors Initiative, the AV data-sharing standards landscape, a working demo, and a spec for what Overture should build and propose — <b>with a $20M federal funding window that closes December 28, 2026</b>.</p>
-  <div class="meta"><span>Prepared for: Ryan Lopez → Will Mortensen</span><span>November 22, 2026</span><span>Follows the Nov 20 executive brief on the UC Berkeley listening session</span></div>
+  <div class="meta"><span>Discussion draft — not an official position of the Overture Maps Foundation or USDOT</span><span>November 22, 2026</span></div>
 </header>
 
 <div class="callout urgent">
   <h3>Two dates drive everything</h3>
-  <p><b>Nov 23, 2026 (tomorrow), 12–1 pm ET</b> — USDOT informational webinar for the <b>Great American Digital Corridors (GADC)</b> grant program (program page: its.dot.gov/gadc). Someone from Overture should attend.</p>
+  <p><b>Nov 23, 2026 (tomorrow), 12–1 pm ET</b> — USDOT informational webinar for the <b>Great American Digital Corridors (GADC)</b> grant program (program page: its.dot.gov/gadc). Overture representation would be valuable.</p>
   <p><b>Dec 28, 2026</b> — GADC applications due via Grants.gov. Up to <b>$20M total, awards of $1–8M, open to states, industry, and academia, no non-federal match required</b>, awards expected early 2027. Overture cannot apply as a state, but an Anchor State DOT application with Overture as the data-infrastructure partner is exactly the engagement model Seval Oz described.</p>
 </div>
 
@@ -118,7 +118,7 @@ footer{padding-block:30px 44px;color:var(--muted);font-size:12.5px;border-top:1p
 </div>
 <div class="callout">
   <h3>The freight frame: aviation already runs this way</h3>
-  <p>Every airline departure is planned around weather and NOTAMs on a shared national picture. Trucking has no equivalent: a container leaving the <b>Port of Long Beach</b> for the heartland crosses a dozen jurisdictions whose closures, work zones, and restrictions live in incompatible systems. The demo shows the fix at Midwest scale — four states' live events on one keyed network, good enough for pre-trip routing around construction the way dispatch routes around a storm. This is the version of DCI that lands with Seval Oz's freight agenda, and it is achievable within this administration: the feeds exist today, GERS exists today, and the conflation is demonstrably a solved problem (99% auto-match, 3.4 m). What remains is adoption, not invention.</p>
+  <p>Every airline departure is planned around weather and NOTAMs on a shared national picture. Trucking has no equivalent: a container leaving the <b>Port of Long Beach</b> for the heartland crosses a dozen jurisdictions whose closures, work zones, and restrictions live in incompatible systems. The demo shows the fix at Midwest scale — four states' live events on one keyed network, good enough for pre-trip routing around construction the way dispatch routes around a storm. This is the version of DCI that speaks directly to USDOT's freight agenda, and it is achievable near-term: the feeds exist today, GERS exists today, and the conflation is demonstrably a solved problem (99% auto-match, 3.4 m). What remains is adoption, not invention.</p>
 </div>
 
 <h2><span class="no">3</span>AV data-sharing standards: what exists, what each gets wrong</h2>
@@ -175,7 +175,7 @@ footer{padding-block:30px 44px;color:var(--muted);font-size:12.5px;border-top:1p
 <p>Once agencies and fleets publish GERS-keyed data, the loop closes inside Overture itself — and this is the part to bring home as an Overture proposal, not just an external pitch:</p>
 <ol>
   <li><b>Authoritative ingestion into the transportation theme.</b> The Addresses theme already set the precedent: it is built from openly licensed authoritative government datasets, not OSM. Propose the same pathway for transportation — a formal contribution channel where state DOT data (speed limits, truck networks, functional class, lane counts) and conformant OEM-derived data enter the theme as sources, keyed by the GERS IDs they already carry. Each new authoritative source reduces reliance on OSM-derived attributes and the ODbL share-alike friction that comes with them, and raises the theme toward automotive grade: verified speed limits and, over time, lane-level understanding.</li>
-  <li><b>The national needs ledger.</b> With usage (lane volumes), risk (hard-braking clusters), condition (damage detections), and disruption (work-zone/closure history) all keyed to the same national segment set, the federal question "which roads cost us the most?" becomes a query instead of a study. USDOT can rank every segment in the country by cost and need — maintenance burden, safety exposure, freight delay — and direct funding out of national need rather than application quality. That ledger is the deliverable that outlives any one administration, and the reason to move while this one is actively asking for it.</li>
+  <li><b>The national needs ledger.</b> With usage (lane volumes), risk (hard-braking clusters), condition (damage detections), and disruption (work-zone/closure history) all keyed to the same national segment set, the federal question "which roads cost us the most?" becomes a query instead of a study. USDOT can rank every segment in the country by cost and need — maintenance burden, safety exposure, freight delay — and direct funding out of national need rather than application quality. That ledger is the deliverable that outlives any one administration, and the reason to move while USDOT is actively asking for it.</li>
 </ol>
 
 <h2><span class="no">5</span>Spec: GERS Digital Corridor Pilot</h2>
@@ -208,8 +208,8 @@ footer{padding-block:30px 44px;color:var(--muted);font-size:12.5px;border-top:1p
 <ul>
   <li><b>(Overture eng)</b> Can GERS stability guarantees be stated contractually enough for a federal data plan? The Sept 2026 base-theme churn bug will come up — have the answer ready.</li>
   <li><b>(Legal/policy)</b> Data-licensing posture when agency feeds embed GERS IDs — confirm no attribution friction for public feeds.</li>
-  <li><b>(Partnerships)</b> Which anchor state first? California (home turf, Fresno/D6 relationships, but Caltrans moves slowly) vs. Nevada (I-80 lead, consultant already on board, prototype corridor).</li>
-  <li><b>(USDOT/Severns)</b> Does GADC allow a foundation as named subrecipient, and is the December DC session confirmed?</li>
+  <li><b>(Partnerships)</b> Which anchor state first? California (existing District 6 relationships, SR-99 freight spine) vs. Nevada (I-80 lead, prototype corridor, consultant on board).</li>
+  <li><b>(USDOT)</b> Does GADC allow a foundation as a named subrecipient?</li>
   <li><b>(Policy/legal)</b> Dynamic corridor management — variable speed limits and time-windowed freight allowances — requires state statutory authority in most states; which anchor states already have it, and does FHWA need to signal anything for the rest?</li>
   <li><b>(Nav partners)</b> What consent and aggregation model would Google/Apple/TomTom/trucking TMS vendors accept for destination-intent sharing ("filed trip plans"), and who hosts the aggregate?</li>
 </ul>
@@ -240,15 +240,15 @@ footer{padding-block:30px 44px;color:var(--muted);font-size:12.5px;border-top:1p
 
 <div class="callout">
   <h3>Why this is a small ask</h3>
-  <p>Count the genuinely new components: the <code>location_references</code> field (a spec change), the open-source tagger sidecar (this demo's pipeline, productionized), a resolver API on infrastructure Overture already runs, a registry column, and one subscription service. Everything else — state feeds, federal registry and archive, Overture's releases, RITIS-style shared hosting — exists and keeps its current owner and funding. That is what makes "operational before the end of the administration" a credible sentence rather than a slide.</p>
+  <p>Count the genuinely new components: the <code>location_references</code> field (a spec change), the open-source tagger sidecar (this demo's pipeline, productionized), a resolver API on infrastructure Overture already runs, a registry column, and one subscription service. Everything else — state feeds, federal registry and archive, Overture's releases, RITIS-style shared hosting — exists and keeps its current owner and funding. That is what makes "operational within a single funding cycle" a credible sentence rather than a slide.</p>
 </div>
 
 <h2><span class="no">7</span>Timeline</h2>
 <div class="timeline">
   <div class="tstep hard"><div class="d">Nov 23 · hard date</div><div class="t">GADC informational webinar (12–1 pm ET)</div><p>Attend; confirm eligibility structure for foundation-as-partner and ask whether location referencing is in scope for data plans.</p></div>
-  <div class="tstep"><div class="d">Nov 24 – Dec 5</div><div class="t">Follow up Kelley Severns (OST-R) + pick the anchor state</div><p>Use the demo as the conversation piece. Parallel soundings: Caltrans D6 contacts (Ryan) and NDOT I-80 coalition (via AtkinsRéalis or TPF-1799 champions). Confirm December DC session details.</p></div>
+  <div class="tstep"><div class="d">Nov 24 – Dec 5</div><div class="t">Follow up with USDOT OST-R + pick the anchor state</div><p>Use the demo as the conversation piece. Parallel soundings: Caltrans District 6 and the NDOT I-80 coalition (via the TPF-1799 champions).</p></div>
   <div class="tstep hard"><div class="d">Dec 28 · hard date</div><div class="t">GADC applications due</div><p>Realistic goal: Overture named as data-infrastructure partner in one state's application, with the GERS profile + conciliation table as a work package. If no state bites in time, the profile work proceeds anyway — GADC is accelerant, not dependency.</p></div>
-  <div class="tstep"><div class="d">Jan 6–8</div><div class="t">CES, Las Vegas</div><p>USDOT presence expected <span class="unc">[unconfirmed]</span>. The AV-manufacturer pitch (§4, venues 2 and 5): one meeting each with Waymo (extends their Waze pothole precedent), Mobileye (REM→agency products), and an AVSC contact.</p></div>
+  <div class="tstep"><div class="d">Jan 6–8</div><div class="t">CES, Las Vegas</div><p>The AV-manufacturer pitch (§4, venues 2 and 5): conversations with Waymo (extends their Waze pothole precedent), Mobileye (REM→agency products), and AVSC participants.</p></div>
   <div class="tstep"><div class="d">Q1 2027</div><div class="t">CWZ extension proposal + live-feed pilot</div><p>File the <code>location_references</code> proposal; stand up the Caltrans or Nevada live-feed demo; GADC awards announced — be in the room either way.</p></div>
 </div>
 
