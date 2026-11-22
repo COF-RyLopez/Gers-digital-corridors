@@ -139,7 +139,80 @@ const Join: React.FC = () => {
   );
 };
 
-// ---- Scene 4 · Numbers (1470–1890) ----
+// ---- Scene 3b · The local mile (1470–1950) ----
+const pathPoint = (pts: [number, number][], t: number): [number, number] => {
+  const seg: number[] = [0];
+  for (let i = 1; i < pts.length; i++) seg.push(seg[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]));
+  const L = seg[seg.length - 1], target = Math.max(0, Math.min(1, t)) * L;
+  let i = 1;
+  while (i < seg.length - 1 && seg[i] < target) i++;
+  const f = (target - seg[i - 1]) / (seg[i] - seg[i - 1] || 1);
+  return [pts[i - 1][0] + (pts[i][0] - pts[i - 1][0]) * f, pts[i - 1][1] + (pts[i][1] - pts[i - 1][1]) * f];
+};
+const FWY: [number, number][] = [[140, 330], [1780, 330]];
+const DETOUR: [number, number][] = [[140, 330], [790, 330], [790, 600], [1180, 600], [1180, 330], [1780, 330]];
+const CRASH_F = 55;
+const LocalMile: React.FC = () => {
+  const f = useCurrentFrame();
+  const crashed = f >= CRASH_F;
+  const detourDraw = interpolate(f, [CRASH_F + 10, CRASH_F + 55], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: ease});
+  const gridXs = [660, 790, 920, 1050, 1180, 1310];
+  const gridYs = [460, 600, 720];
+  const dots = Array.from({length: 8}, (_, i) => {
+    const t = (f * 0.0045 + i * 0.125) % 1;
+    const onDetour = crashed && detourDraw > 0.95;
+    const [x, y] = pathPoint(onDetour ? DETOUR : FWY, t);
+    // pre-detour: dots pile up before the closure instead of crossing it
+    const blocked = crashed && !onDetour && x > 860;
+    return blocked ? null : {x, y, i};
+  }).filter(Boolean) as {x: number; y: number; i: number}[];
+  const signals = [[790, 460], [790, 600], [1180, 600], [1180, 460]] as const;
+  const cap2 = f >= 300;
+  return (
+    <AbsoluteFill style={{background: C.bg}}>
+      <svg width={1920} height={1080}>
+        {gridXs.map((x) => <line key={'v' + x} x1={x} y1={410} x2={x} y2={770} stroke={C.line} strokeWidth={3} />)}
+        {gridYs.map((y) => <line key={'h' + y} x1={600} y1={y} x2={1370} y2={y} stroke={C.line} strokeWidth={3} />)}
+        <line x1={140} y1={330} x2={1780} y2={330} stroke={C.road} strokeWidth={14} strokeLinecap="round" />
+        {crashed && <line x1={870} y1={330} x2={1100} y2={330} stroke="#C62F2F" strokeWidth={14} strokeLinecap="round" />}
+        {crashed && (
+          <g transform="translate(985,330)" opacity={interpolate(f, [CRASH_F, CRASH_F + 10], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'})}>
+            <circle r={26} fill="#C62F2F" />
+            <line x1={-10} y1={-10} x2={10} y2={10} stroke={C.bg} strokeWidth={5} strokeLinecap="round" />
+            <line x1={-10} y1={10} x2={10} y2={-10} stroke={C.bg} strokeWidth={5} strokeLinecap="round" />
+          </g>
+        )}
+        <path d={'M' + DETOUR.map((p) => p.join(',')).join('L')} fill="none" stroke={C.orange} strokeWidth={6}
+          strokeLinecap="round" pathLength={1} strokeDasharray={1} strokeDashoffset={1 - detourDraw} opacity={crashed ? 0.9 : 0} />
+        {dots.map((d) => <circle key={d.i} cx={d.x} cy={d.y} r={9} fill={C.ink} opacity={0.85} />)}
+        {signals.map(([x, y], i) => {
+          const on = interpolate(f, [190 + i * 14, 204 + i * 14], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
+          return (
+            <g key={i}>
+              <circle cx={x} cy={y} r={13} fill={C.panel} stroke={C.muted} strokeWidth={2} />
+              <circle cx={x} cy={y} r={13} fill="#4FB06C" opacity={on} />
+            </g>
+          );
+        })}
+      </svg>
+      <div style={{position: 'absolute', left: 140, top: 92}}>
+        <Fade from={6}><Kicker>BEYOND THE INTERSTATES — THE LOCAL MILE</Kicker></Fade>
+        <Fade from={16}><div style={{fontFamily: OV, fontWeight: 800, fontSize: 62, color: C.ink, lineHeight: 1.1}}>A crash closes the freeway. Then what?</div></Fade>
+      </div>
+      <div style={{position: 'absolute', right: 120, top: 420, display: 'flex', flexDirection: 'column', gap: 18, alignItems: 'flex-end'}}>
+        <Fade from={200} rise={12}><div style={{fontFamily: MONO, fontSize: 25, color: '#4FB06C', background: '#242C34', border: '2px solid #2D353E', borderRadius: 9, padding: '9px 16px'}}>signal retiming · plan 7B active</div></Fade>
+        <Fade from={230} rise={12}><div style={{fontFamily: MONO, fontSize: 25, color: C.blue, background: '#242C34', border: '2px solid #2D353E', borderRadius: 9, padding: '9px 16px'}}>traffic officers · 2 dispatched</div></Fade>
+        <Fade from={260} rise={12}><div style={{fontFamily: MONO, fontSize: 25, color: C.orange, background: '#242C34', border: `2px solid ${C.orange}`, borderRadius: 9, padding: '9px 16px'}}>incident_id CAD-26-1147 ↔ gers_id 3ea4d8ed…</div></Fade>
+      </div>
+      <div style={{position: 'absolute', left: 140, bottom: 90}}>
+        {!cap2 && <Fade from={120}><div style={{fontFamily: IN, fontSize: 33, color: C.muted, width: 1300}}>Navigation floods the local streets — <span style={{color: C.ink, fontWeight: 600}}>and today, nobody tells the city.</span></div></Fade>}
+        {cap2 && <Fade from={300}><div style={{fontFamily: IN, fontSize: 33, color: C.muted, width: 1500}}>On one keyed feed: signals adapt, officers deploy, and every hour <span style={{color: C.ink, fontWeight: 600}}>charges back to the incident</span> — the detour lands on a road a local agency owns.</div></Fade>}
+      </div>
+    </AbsoluteFill>
+  );
+};
+
+// ---- Scene 4 · Numbers (1950–2370) ----
 const Stat: React.FC<{value: string; label: string; from: number; accent?: boolean}> = ({value, label, from, accent}) => {
   const f = useCurrentFrame();
   const {fps} = useVideoConfig();
@@ -184,8 +257,9 @@ export const MyComposition: React.FC = () => {
       <Sequence durationInFrames={240}><Title /></Sequence>
       <Sequence from={240} durationInFrames={570}><National /></Sequence>
       <Sequence from={810} durationInFrames={660}><Join /></Sequence>
-      <Sequence from={1470} durationInFrames={420}><Numbers /></Sequence>
-      <Sequence from={1890} durationInFrames={300}><Close /></Sequence>
+      <Sequence from={1470} durationInFrames={480}><LocalMile /></Sequence>
+      <Sequence from={1950} durationInFrames={420}><Numbers /></Sequence>
+      <Sequence from={2370} durationInFrames={300}><Close /></Sequence>
     </AbsoluteFill>
   );
 };
