@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="GERS as the join key for USDOT Digital Corridors — strategy brief and working demo">
+<title>GERS × Digital Corridors Strategy</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Overpass:wght@400;600;700;800&family=Overpass+Mono:wght@400;600&family=Inter:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: single-column report, 72ch measure, sticky section nav on wide screens */
+:root{
+  --bg:#f5f7f9; --surface:#ffffff; --fg:#1a2129; --muted:#5b6672; --line:#d9dfe6;
+  --accent:#0b63b8; --wz:#c45f06; --av:#0e8f7e; --alert:#b52828; --chip:#eef2f5;
+  --display:'Overpass',system-ui,sans-serif; --body:'Inter',system-ui,sans-serif; --mono:'Overpass Mono',ui-monospace,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#14181d; --surface:#1c2228; --fg:#e8edf2; --muted:#96a3b0; --line:#2d353e;
+  --accent:#5aa4e0; --wz:#f08a2e; --av:#35b3a0; --alert:#e05555; --chip:#242c34; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#14181d; --surface:#1c2228; --fg:#e8edf2; --muted:#96a3b0; --line:#2d353e;
+  --accent:#5aa4e0; --wz:#f08a2e; --av:#35b3a0; --alert:#e05555; --chip:#242c34; color-scheme:dark }
+body{background:var(--bg);color:var(--fg);font-family:var(--body);margin:0;font-size:15px;line-height:1.62}
+.wrap{max-width:880px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{padding-block:34px 10px}
+.kicker{font-family:var(--display);font-weight:600;letter-spacing:.12em;text-transform:uppercase;font-size:11px;color:var(--muted)}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(26px,5vw,38px);line-height:1.12;margin:.2em 0 .2em;text-wrap:balance}
+.standfirst{font-size:17px;color:var(--muted);max-width:66ch;margin:0 0 10px}
+.standfirst b{color:var(--fg)}
+.meta{font-size:12.5px;color:var(--muted);border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:8px 0;display:flex;flex-wrap:wrap;gap:6px 22px}
+h2{font-family:var(--display);font-weight:800;font-size:21px;margin:2.2em 0 .5em;text-wrap:balance}
+h2 .no{color:var(--accent);margin-right:.4em;font-variant-numeric:tabular-nums}
+h3{font-family:var(--display);font-weight:700;font-size:15.5px;margin:1.6em 0 .4em}
+p{margin:.55em 0;max-width:72ch}
+ul,ol{max-width:72ch;padding-left:1.3em;margin:.5em 0}
+li{margin:.3em 0}
+a{color:var(--accent);text-decoration-thickness:1px;text-underline-offset:2px}
+code{font-family:var(--mono);font-size:.88em;background:var(--chip);border-radius:4px;padding:.08em .35em}
+.callout{border:1px solid var(--line);border-left:4px solid var(--accent);background:var(--surface);border-radius:8px;padding:14px 18px;margin:1.2em 0;max-width:76ch}
+.callout.urgent{border-left-color:var(--alert)}
+.callout.demo{border-left-color:var(--av)}
+.callout h3{margin:0 0 6px}
+.callout p{margin:.35em 0}
+.tbl{overflow-x:auto;margin:1em 0;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:620px}
+th{font-family:var(--display);font-weight:700;text-align:left;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+th,td{padding:9px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{white-space:nowrap;font-weight:600}
+.tag{font:600 10.5px var(--body);letter-spacing:.04em;border-radius:99px;padding:2px 9px;white-space:nowrap}
+.p0{background:color-mix(in srgb,var(--alert) 13%,transparent);color:var(--alert)}
+.p1{background:color-mix(in srgb,var(--wz) 14%,transparent);color:var(--wz)}
+.p2{background:var(--chip);color:var(--muted)}
+.ok{background:color-mix(in srgb,var(--av) 14%,transparent);color:var(--av)}
+.unc{font-size:.85em;color:var(--wz);font-weight:600}
+.src{font-size:12px;color:var(--muted)}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;margin:1em 0}
+.cols .card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:13px 16px}
+.cols h3{margin:0 0 6px;font-size:14px}
+.cols p{font-size:13px;color:var(--muted);margin:0}
+.timeline{border-left:3px solid var(--line);margin:1em 0 1em 6px;padding-left:20px;display:grid;gap:14px;max-width:72ch}
+.tstep{position:relative}
+.tstep::before{content:"";position:absolute;left:-26.5px;top:5px;width:10px;height:10px;border-radius:50%;background:var(--accent)}
+.tstep.hard::before{background:var(--alert)}
+.tstep .d{font:700 12px var(--display);letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.tstep .t{font-weight:600}
+.tstep p{font-size:13.5px;color:var(--muted);margin:.2em 0 0}
+footer{padding-block:30px 44px;color:var(--muted);font-size:12.5px;border-top:1px solid var(--line);margin-top:40px}
+@media (prefers-reduced-motion: reduce){*{scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+<header>
+  <div class="kicker">Overture Maps Foundation · Internal strategy brief</div>
+  <h1>GERS as the join key for USDOT's Digital Corridors</h1>
+  <p class="standfirst">Deep-dive research on the Digital Corridors Initiative, the AV data-sharing standards landscape, a working demo, and a spec for what Overture should build and propose — <b>with a $20M federal funding window that closes December 28, 2026</b>.</p>
+  <div class="meta"><span>Prepared for: Ryan Lopez → Will Mortensen</span><span>November 22, 2026</span><span>Follows the Nov 20 executive brief on the UC Berkeley listening session</span></div>
+</header>
+
+<div class="callout urgent">
+  <h3>Two dates drive everything</h3>
+  <p><b>Nov 23, 2026 (tomorrow), 12–1 pm ET</b> — USDOT informational webinar for the <b>Great American Digital Corridors (GADC)</b> grant program (program page: its.dot.gov/gadc). Someone from Overture should attend.</p>
+  <p><b>Dec 28, 2026</b> — GADC applications due via Grants.gov. Up to <b>$20M total, awards of $1–8M, open to states, industry, and academia, no non-federal match required</b>, awards expected early 2027. Overture cannot apply as a state, but an Anchor State DOT application with Overture as the data-infrastructure partner is exactly the engagement model Seval Oz described.</p>
+</div>
+
+<div class="callout demo">
+  <h3>Working demo — real data from four states</h3>
+  <p><a href="demo/"><b>Open the interactive demo →</b></a></p>
+  <p><b>GERS Digital Corridor Pilot</b> — the headline view conflates <b>306 live 511 events published by four state DOTs (Iowa 114, Missouri 143, Minnesota 29, Nebraska 20</b>; fetched Nov 22, 2026 from Iowa DOT's public ArcGIS services, IA/NE/MN via the states' own multi-state CARS consortium) onto <b>11,997 real Overture motorway segments</b> across the I-80 / I-35 / I-29 / I-70 / I-94 freight network. The results are the proof: <b>99% of interstate point events auto-matched (371/375), median snap distance 3.4 meters</b>, with match provenance (method, snap distance, route agreement) carried on every join. I-35 events read as one keyed spine through Missouri, Iowa, and Minnesota. Iowa's closure records keep the state's own RAMS <code>ROUTE_ID</code> — the authoritative LRS is untouched; GERS is only the glue. Four states, four feeds in four shapes (Missouri's has no structured route field at all — we parsed it from headline text, which is itself the argument), one keyed corridor dataset, zero bilateral integration. A second tab keeps the Fresno SR-99 concept showing the AV-fleet feedback loop (simulated — no public AV observation feed exists yet, which is the point of §4).</p>
+</div>
+
+<h2><span class="no">1</span>What the Digital Corridors Initiative actually is</h2>
+<p>DCI is a federally assisted, state-led effort run out of <b>OST-R (Seval Oz) jointly with FHWA</b>, with AASHTO, TRB, and ITS America, to modernize the interstates through large-scale deployment of "Transportation Digital Infrastructure." Its <b>first use case is real-time work-zone and lane-closure data, end-to-end across interstate corridors</b>. It rolled out across 2026 rather than launching on one date:</p>
+<ul>
+  <li><b>Feb 2026</b> — OST-R Request for Information on a National Strategy for Transportation Digital Infrastructure (docket <a href="https://www.regulations.gov/document/DOT-OST-2026-0430-0001">DOT-OST-2026-0430</a>); ~177 responses, ~3,000 pages.</li>
+  <li><b>June 2026</b> — Oz previewed the program at ITS America Detroit: 10 states joined at that point, <b>FHWA providing $200K per participating state</b>, an "open-source backend" for interoperability (<a href="https://govciomedia.com/dots-vision-for-ai-powered-digital-corridors-for-interstate-travel/">GovCIO interview</a>).</li>
+  <li><b>Oct 9, 2026</b> — DCI Coalition <b>Data Collection, Quality, and Validation Working Group</b> workshop (Anchor States + industry), defining minimum data requirements for interstate work-zone data (<a href="https://safety21.cmu.edu/2026/10/09/joint-digital-corridors-coalition-workshop/">CMU Safety21</a>).</li>
+  <li><b>Nov 13, 2026</b> — <b>$20M GADC NOFO</b> announced: public data feeds along multi-state corridors; four priority areas — work zones, congestion, freight bottlenecks, emergency response (<a href="https://www.transportation.gov/briefing-room/trumps-transportation-department-direct-20-million-launch-great-american-digital">USDOT release</a>).</li>
+</ul>
+<h3>Corridors and anchor states</h3>
+<p>Ten anchor-state DOTs are publicly reported — <b>California, Delaware, Florida, Georgia, Iowa, Kansas, Minnesota, Nevada, Oklahoma, Texas</b> — with Oz's own materials saying 11; the eleventh and the corridor-to-state mapping are not public <span class="unc">[unconfirmed]</span>. What is confirmed at corridor level: <b>Nevada DOT leads I-80</b> (11 states, ~2,900 miles, AtkinsRéalis selected Nov 2025 as lead consultant; NDOT calls it the prototype for I-35, I-10, I-15); an <b>I-35 coalition</b> runs jointly with I-80 under pooled-fund study <a href="https://pooledfund.org/Details/Study/1799">TPF-1799</a> (Iowa lead, Nevada and Texas co-champions); <b>New Mexico leads an I-40 SMART grant</b> with UC Berkeley PATH; the <b>Eastern Transportation Coalition</b> covers I-95. Note for us: <b>California is an anchor state</b> — and Fresno County sits on the SR-99 freight spine that connects to two likely corridors (I-5/I-10 reach).</p>
+<h3>Standards stack and governance</h3>
+<p>The confirmed technical backbone is <b>WZDx → Connected Work Zones (CWZ)</b>, now being formalized as a joint <b>AASHTO/ITE/NEMA standard with SAE involvement</b>; FHWA reports <b>35 states already publish WZDx/CWZ feeds</b> under EDC-8 "Connected Corridors." Governance runs through the DCI Coalition working groups, the TPF-1799 pooled fund, and OST-R NOFOs. USDOT's Sep 2026 National AV Strategy carries a "Facilitate Interoperable Corridors" objective — DCI's charter inside the AV strategy.</p>
+
+<h2><span class="no">2</span>The gap nobody has claimed: location referencing</h2>
+<p>Every structural gap our research found converges on the same missing layer — and <b>no USDOT or DCI document addresses it</b>:</p>
+<ul>
+  <li><b>Each state's linear referencing system is incompatible with every other's.</b> ARNOLD/HPMS requires each state to keep an LRS, but routes and measures differ state to state; cross-state conflation is "computationally heavy, error-prone, and hard to verify." AASHTO's own data committee lists "inconsistencies in location referencing" as a named gap.</li>
+  <li><b>WZDx ships raw GeoJSON coordinates</b> (plus optional mileposts) with no entity-ID slot — so every consumer (Waze, Google, each OEM, each neighboring state) re-map-matches every feed against its own basemap, per feed, per vendor.</li>
+  <li><b>The one live AV→agency feed proves the demand and the problem at once:</b> Waymo began sharing pothole detections with city and state DOTs in April 2026 — through Waze for Cities, as lat/lon points on Waze's proprietary map (<a href="https://waymo.com/blog/2026/04/partnering-with-waze-to-help-cities-patch-their-potholes/">Waymo blog</a>).</li>
+  <li><b>The previous neutral-ID attempt, SharedStreets, is dormant</b> (no releases since ~2021–23). Its lesson: a referencing system without a funded, versioned, continuously published reference dataset dies. Overture supplies exactly what SharedStreets lacked — and is already working with <b>OGC to make GERS a community standard</b>.</li>
+</ul>
+<div class="callout">
+  <h3>The one-sentence positioning</h3>
+  <p>DCI has states agreeing on a <i>message format</i> (CWZ/WZDx) but not on a <i>shared way to say where</i> — GERS is a free, versioned, globally consistent entity reference that lets every agency and every fleet keep its own schema and its own authoritative data, and still join on one key.</p>
+</div>
+<div class="callout">
+  <h3>The freight frame: aviation already runs this way</h3>
+  <p>Every airline departure is planned around weather and NOTAMs on a shared national picture. Trucking has no equivalent: a container leaving the <b>Port of Long Beach</b> for the heartland crosses a dozen jurisdictions whose closures, work zones, and restrictions live in incompatible systems. The demo shows the fix at Midwest scale — four states' live events on one keyed network, good enough for pre-trip routing around construction the way dispatch routes around a storm. This is the version of DCI that lands with Seval Oz's freight agenda, and it is achievable within this administration: the feeds exist today, GERS exists today, and the conflation is demonstrably a solved problem (99% auto-match, 3.4 m). What remains is adoption, not invention.</p>
+</div>
+
+<h2><span class="no">3</span>AV data-sharing standards: what exists, what each gets wrong</h2>
+<div class="tbl"><table>
+<thead><tr><th>Standard / program</th><th>Who / direction</th><th>Location referencing</th><th>Verdict for DCI</th></tr></thead>
+<tbody>
+<tr><td>WZDx v4.2 / CWZ</td><td>Agencies → public; ITE/AASHTO/NEMA + SAE</td><td>Raw GeoJSON + optional mileposts; multiple parallel descriptions allowed, no ID slot</td><td><span class="tag ok">best venue</span> — additive GERS extension is non-breaking; precedent for multi-method locations exists</td></tr>
+<tr><td>SAE J3224 (SDSM)</td><td>V2X tactical sensor sharing</td><td>Raw lat/lon + offsets per J2735</td><td>Real-time safety channel, not archival; longer-term profile target</td></tr>
+<tr><td>SAE J2735 (2024-09)</td><td>V2X message set</td><td>1/10 µdeg lat/lon; deployer-scoped MAP lane IDs</td><td>Same — ephemeral, no join key</td></tr>
+<tr><td>SENSORIS v1.2</td><td>OEM vehicle → map cloud (ERTICO; HERE-originated)</td><td>Coordinates + a "map identification" envelope naming a (proprietary) map</td><td><span class="tag ok">high leverage</span> — the envelope is the natural slot for "Overture/GERS + release" as a neutral public map citation</td></tr>
+<tr><td>ADASIS v3</td><td>Map cloud → vehicle (electronic horizon)</td><td>Horizon paths/offsets</td><td>Wrong direction; consuming counterpart only</td></tr>
+<tr><td>Mobileye REM</td><td>8M+ ADAS vehicles → Mobileye Roadbook; agency data products exist</td><td>Proprietary Roadbook IDs; agency deliverables are geocoded extracts</td><td>Proof fleets can deliver agency-grade observations — and proof of the proprietary-silo problem</td></tr>
+<tr><td>DATEX II (EN 16157)</td><td>EU traffic management exchange</td><td>Five co-existing methods: ALERT-C, TPEG-Loc, linear, OpenLR</td><td>The design precedent: one event, several location methods — a GERS profile follows this pattern</td></tr>
+<tr><td>OpenLR / ISO 17572-3</td><td>Map-agnostic transfer encoding</td><td>Encode on map A, decode on map B (probabilistic)</td><td>A transfer mechanism, not a join key — you can't index an asset database on an OpenLR string; complements GERS, doesn't compete</td></tr>
+<tr><td>NHTSA SGO / AV STEP</td><td>Mandated AV crash / operations reporting</td><td>Coarse (city/state-level public data); AV STEP not final <span class="unc">[verify]</span></td><td>Shows federal reporting mandates exist but carry no usable location referencing</td></tr>
+</tbody></table></div>
+<p>What AV companies share today: <b>Waymo</b> — pothole detections to DOTs via Waze (the headline precedent); <b>Zoox, Aurora, Kodiak, Gatik</b> — fleet registration and safety reporting where mandated (e.g. Texas DMV), no standing observation feeds; <b>Tesla</b> — fleet data stays internal; <b>AVSC</b> (where these companies already coordinate, under SAE ITC) has best practices on metrics and monitoring but <b>none prescribes geographic referencing</b> — an open slot for a best-practice proposal.</p>
+
+<h2><span class="no">4</span>What Overture should propose: the GERS-Referenced Observation Profile</h2>
+<p>A thin, additive profile — not a new standard — that any producer (state DOT, AV fleet, work-zone device vendor) attaches to an existing message. Five elements:</p>
+<div class="cols">
+  <div class="card"><h3>1 · The reference</h3><p><code>gers_id</code> (UUID) + <code>overture_release</code> (e.g. 2026-11-18.0) + feature type, with optional lane index and linear offset along the segment for lane-level work zones.</p></div>
+  <div class="card"><h3>2 · Coordinates stay primary</h3><p>GeoJSON geometry remains required, so non-GERS consumers lose nothing — mirroring DATEX II's multi-method pattern and WZDx's existing coordinates + milepost + name parallelism.</p></div>
+  <div class="card"><h3>3 · Match provenance</h3><p>Who performed the GERS match (producer vs. aggregator), method, and confidence — so consumers can weigh trust.</p></div>
+  <div class="card"><h3>4 · Churn handling</h3><p>Segment ID churn is ~0.7–0.8%/monthly release; producers refresh against the GERS registry/changelog each release, consumers resolve splits via changelog.</p></div>
+  <div class="card"><h3>5 · The missing bridge file</h3><p>No state-LRS↔GERS bridge exists today. A one-time conciliation table per state (Caltrans postmiles ↔ GERS IDs) is the enabling artifact — and a deliverable Overture is uniquely positioned to produce.</p></div>
+</div>
+<h3>What travels over it — both directions</h3>
+<p><b>Fleet → agency (the OEM/commercial standard to propose).</b> One GERS-keyed feed any OEM, AV operator, or commercial fleet can publish, carrying whatever observation classes they are willing to share, each an aggregate keyed to a segment ID rather than a trace of any vehicle:</p>
+<ul>
+  <li><b>Lane-level usage</b> — vehicle counts per lane per time bucket ("rides per lane"), the ground truth states cannot see today without pavement sensors.</li>
+  <li><b>Traffic patterns</b> — speed profiles and travel-time reliability by segment, time of day, and day of week.</li>
+  <li><b>Hard-braking and harsh-event clusters</b> — the leading indicator of near-misses; a hard-braking hotspot on a GERS segment is a safety signal years before the crash data catches up.</li>
+  <li><b>Road condition</b> — pothole/damage detections (the Waymo–Waze precedent, made portable), signage changes, faded markings.</li>
+  <li><b>Work-zone confirmations</b> — cone patterns, lane shifts, workers present, cross-validating the state feed.</li>
+</ul>
+<p><b>Agency → fleet (the return channel).</b> The same reference carries authoritative restrictions outward: <b>approved heavy-vehicle routes</b>, bridge weight limits, oversize/overweight permit networks, seasonal and hazmat restrictions — published per GERS segment, so a routing engine or in-cab system consumes every state's truck network as one dataset and a driver knows where they can legally go before the trip starts. Aggregation thresholds and k-anonymity floors belong in the profile so no class of observation identifies a vehicle or a driver.</p>
+<h3>From shared data to shared operations</h3>
+<p>Aviation did not stop at a shared weather picture; it built flow management on top — ground holds, reroutes, slot allocation. The same ladder applies here, and every rung runs on the same GERS-keyed layers:</p>
+<ol>
+  <li><b>Shared picture</b> (the demo, today): every state's events, one keyed network, consumed by anyone.</li>
+  <li><b>Coordinated response.</b> States and corridor coalitions <b>subscribe to national event layers by segment set</b> — "notify me when anything touches my stretch of I-80 or the corridors feeding it." A blizzard closing I-80 in Wyoming triggers automated asks downstream: hold planned construction on the detour routes, surge debris crews, keep the alternate corridor at full capacity — construction paused out of economic need to move freight. Today that coordination is phone calls between TMCs; keyed subscriptions make it an event-driven system.</li>
+  <li><b>Demand-aware flow management.</b> Navigation partners let their users <b>opt in to sharing destination and route intent</b> — the highway equivalent of a filed flight plan — aggregated into expected load per segment per hour (consented, aggregated origin–destination flows only; no individual trips). With predicted demand and live events on the same segments, corridor operators can grant <b>time-windowed freight allowances and variable speed limits</b> — faster overnight freight windows, passenger priority at peaks — published as time-bound attributes on GERS segments. Overture's transportation schema already models conditional speed-limit rules, so the data shape exists; the regulatory authority for dynamic limits is state law and belongs on the open-questions list.</li>
+</ol>
+<h3>Venues, in order of leverage</h3>
+<ol>
+  <li><b>CWZ standards committee (AASHTO/ITE/NEMA) + the WZDx GitHub</b> — propose an optional <code>location_references</code> array with a GERS entry type. Additive, non-breaking, lands in the exact spec DCI is standardizing on.</li>
+  <li><b>SENSORIS (ERTICO)</b> — a profile citing "Overture/GERS + release" in the map-identification envelope makes OEM→cloud observations natively GERS-keyed.</li>
+  <li><b>OGC community-standard process</b> — fold the observation-profile requirements (lane/offset sub-referencing, release pinning) into the GERS standard while it's being drafted.</li>
+  <li><b>GADC award teams</b> — get GERS referencing written into a funded multi-state pilot's data plan (see §6).</li>
+  <li><b>AVSC / SAE V2X</b> — longer-term: an AVSC best practice recommending GERS-keyed AV→agency reporting; AVSC is where Waymo, Zoox, Aurora et al. already sit.</li>
+</ol>
+<h3>The flywheel: standard → Overture ingestion → national analytics</h3>
+<p>Once agencies and fleets publish GERS-keyed data, the loop closes inside Overture itself — and this is the part to bring home as an Overture proposal, not just an external pitch:</p>
+<ol>
+  <li><b>Authoritative ingestion into the transportation theme.</b> The Addresses theme already set the precedent: it is built from openly licensed authoritative government datasets, not OSM. Propose the same pathway for transportation — a formal contribution channel where state DOT data (speed limits, truck networks, functional class, lane counts) and conformant OEM-derived data enter the theme as sources, keyed by the GERS IDs they already carry. Each new authoritative source reduces reliance on OSM-derived attributes and the ODbL share-alike friction that comes with them, and raises the theme toward automotive grade: verified speed limits and, over time, lane-level understanding.</li>
+  <li><b>The national needs ledger.</b> With usage (lane volumes), risk (hard-braking clusters), condition (damage detections), and disruption (work-zone/closure history) all keyed to the same national segment set, the federal question "which roads cost us the most?" becomes a query instead of a study. USDOT can rank every segment in the country by cost and need — maintenance burden, safety exposure, freight delay — and direct funding out of national need rather than application quality. That ledger is the deliverable that outlives any one administration, and the reason to move while this one is actively asking for it.</li>
+</ol>
+
+<h2><span class="no">5</span>Spec: GERS Digital Corridor Pilot</h2>
+<p><b>Problem.</b> States on DCI corridors are standing up work-zone feeds that every consumer must re-map-match, and AV fleets have road observations agencies want but no neutral way to reference them. Without a shared entity reference, DCI ships eleven corridors of coordinate soup and the conflation cost lands on every consumer, forever.</p>
+<p><b>Goals.</b> (1) An Anchor State DOT publishes a WZDx/CWZ feed carrying GERS references in production. (2) At least one AV or fleet-data producer publishes observations keyed to GERS on the same corridor. (3) A GERS location-referencing extension is formally proposed to the CWZ committee. (4) Overture is named data-infrastructure partner in at least one GADC application. <b>Non-goals:</b> replacing any state LRS or schema; building a consumer app; lane-level HD mapping; hosting agency data.</p>
+<h3>User stories</h3>
+<ul>
+  <li>As a <b>state DOT traffic engineer</b>, I want my existing LCS/work-zone records tagged with GERS IDs so neighboring states and OEMs consume my feed without re-conflating it.</li>
+  <li>As an <b>AV fleet operator</b>, I want to report cone patterns and lane shifts against a public, versioned segment ID so one export serves every jurisdiction I operate in.</li>
+  <li>As a <b>corridor coalition analyst</b>, I want state feeds and fleet observations joined on one key so I can see where fleets confirm — or contradict — the official picture.</li>
+  <li>As a <b>county public-works department</b>, I want to attach my permits and assets to the same IDs the state uses so my data participates without a GIS integration project.</li>
+</ul>
+<h3>Requirements</h3>
+<div class="tbl"><table>
+<thead><tr><th>Priority</th><th>Requirement</th><th>Acceptance criteria</th></tr></thead>
+<tbody>
+<tr><td><span class="tag p0">P0</span></td><td>Profile spec v0.1 (the five elements in §4) published as an Overture technical note</td><td>Reviewed by Overture transportation WG; example payloads validate against WZDx v4.2 without breaking existing consumers</td></tr>
+<tr><td><span class="tag p0">P0</span></td><td>State-LRS↔GERS conciliation table for one pilot corridor (e.g. Caltrans D6, SR-99)</td><td>≥95% of mainline centerline mileage matched postmile-range→GERS ID with documented method and confidence</td></tr>
+<tr><td><span class="tag p0">P0</span></td><td>Continuous-refresh pipeline over live state feeds (batch conflation already proven: 306 real 511 events from IA/NE/MN/MO joined to GERS, 99% interstate point match, 3.4 m median snap)</td><td>Given a feed URL, the pipeline re-emits the feed + <code>location_references</code> on every refresh cycle; demo map renders it</td></tr>
+<tr><td><span class="tag p1">P1</span></td><td>CWZ/WZDx extension proposal submitted (GitHub issue + committee paper)</td><td>Proposal filed; at least one state DOT co-sponsor</td></tr>
+<tr><td><span class="tag p1">P1</span></td><td>AV/OEM-observation reference implementation (SDSM/SENSORIS-shaped sample + validator, covering lane-usage, speed-profile, and hard-braking aggregate classes)</td><td>A fleet can produce conformant GERS-keyed observations from lat/lon detections using the published matcher; aggregates meet the profile's k-anonymity floor</td></tr>
+<tr><td><span class="tag p1">P1</span></td><td>Overture transportation ingestion RFC: a formal authoritative-source pathway modeled on the Addresses theme (state DOT speed limits, truck networks, lane counts; conformant OEM-derived attributes)</td><td>RFC filed with the Overture transportation working group; one authoritative state dataset ingested end-to-end as a pilot</td></tr>
+<tr><td><span class="tag p2">P2</span></td><td>Authoritative truck-route / restriction reference feed for one state, published per GERS segment (approved heavy-vehicle routes, weight limits, OS/OW network)</td><td>A routing engine consumes the feed and produces a legal heavy-vehicle route across a state line with no custom integration</td></tr>
+<tr><td><span class="tag p2">P2</span></td><td>Multi-state join demo on a real DCI corridor (I-80 or I-35, two+ states)</td><td>One map, two states' feeds, zero cross-border re-conflation</td></tr>
+<tr><td><span class="tag p2">P2</span></td><td>GERS release-churn resolver service (changelog-driven ID refresh)</td><td>Feed IDs auto-migrate across a monthly release including a segment split</td></tr>
+</tbody></table></div>
+<h3>Success metrics</h3>
+<p><b>Leading:</b> states/vendors engaging with the profile spec (target: 3 by Q1 2027); demo shared in ≥2 USDOT/coalition venues; GADC applications naming Overture (target: ≥1). <b>Lagging:</b> a production GERS-tagged feed by mid-2027; CWZ committee agenda slot; one AV operator pilot commitment.</p>
+<h3>Open questions</h3>
+<ul>
+  <li><b>(Overture eng)</b> Can GERS stability guarantees be stated contractually enough for a federal data plan? The Sept 2026 base-theme churn bug will come up — have the answer ready.</li>
+  <li><b>(Legal/policy)</b> Data-licensing posture when agency feeds embed GERS IDs — confirm no attribution friction for public feeds.</li>
+  <li><b>(Partnerships)</b> Which anchor state first? California (home turf, Fresno/D6 relationships, but Caltrans moves slowly) vs. Nevada (I-80 lead, consultant already on board, prototype corridor).</li>
+  <li><b>(USDOT/Severns)</b> Does GADC allow a foundation as named subrecipient, and is the December DC session confirmed?</li>
+  <li><b>(Policy/legal)</b> Dynamic corridor management — variable speed limits and time-windowed freight allowances — requires state statutory authority in most states; which anchor states already have it, and does FHWA need to signal anything for the rest?</li>
+  <li><b>(Nav partners)</b> What consent and aggregation model would Google/Apple/TomTom/trucking TMS vendors accept for destination-intent sharing ("filed trip plans"), and who hosts the aggregate?</li>
+</ul>
+
+<h2><span class="no">6</span>If it lands: the reference architecture</h2>
+<p>The question that follows the pitch is "who hosts this and where are the endpoints?" The answer that fits DCI's politics — state-led, AASHTO's insistence on state-DOT centrality, Oz's "open-source backend" — is <b>federation with a thin national fabric</b>. Nobody hands their data to anyone. States keep publishing from where they publish today; Overture keeps hosting the reference layer it already hosts; the federal pieces are a registry, an archive, and standards — all of which exist in some form now.</p>
+
+<div class="tbl"><table>
+<thead><tr><th>Layer</th><th>What it is</th><th>Who hosts</th><th>Status</th></tr></thead>
+<tbody>
+<tr><td>Reference</td><td>GERS registry, per-release changelog, bridge files, monthly GeoParquet releases — the shared segment vocabulary everything keys to</td><td><b>Overture</b> (exists: public S3, <code>overturemaps-us-west-2</code>; registry/changelog per release). Add a lightweight GERS resolver API (ID → geometry/attributes; point → candidate IDs)</td><td><span class="tag ok">exists</span> + small addition</td></tr>
+<tr><td>Producer edge</td><td>State 511/WZDx/CWZ feeds, exactly where they live today (state ArcGIS orgs, CARS/Castle Rock, Q-Free, one.network, iCone device feeds) — now carrying <code>location_references</code>. Beside each feed, a <b>GERS tagger sidecar</b>: the open-source conflation pipeline this demo ran, re-tagging on every refresh and every Overture release</td><td><b>Each state / their existing vendor</b>. The sidecar is open-source (Overture publishes it); states run it or their feed vendor embeds it — a one-line GADC-fundable work item per state</td><td><span class="tag ok">feeds exist</span> · sidecar is the new piece</td></tr>
+<tr><td>OEM / fleet edge</td><td>Aggregated observation feeds (lane usage, speed profiles, hard-braking clusters, damage detections) published GERS-keyed from each OEM/fleet cloud — same pattern as SENSORIS to map clouds today</td><td><b>Each OEM/fleet</b>, or a neutral aggregator under USDOT license — the NPMRDS precedent, where USDOT licenses national probe data and <b>RITIS (UMD CATT Lab)</b> serves it to every agency</td><td>new — the §4 standard</td></tr>
+<tr><td>National fabric</td><td>(a) <b>Feed registry</b>: catalog of every feed URL, its corridors, standards version, GERS coverage — extends the existing WZDx Feed Registry; (b) <b>subscription service</b>: subscribe by GERS segment set or corridor, delivered as webhooks/pub-sub (the rung-2 coordination layer); (c) <b>archive</b>: every feed's history as GeoParquet for analytics</td><td><b>USDOT ITS JPO</b> (registry + archive are extensions of data.transportation.gov and the ITS DataHub S3 sandboxes that already archive WZDx); subscription fabric run federally or by a corridor coalition under the TPF-1799 pooled fund — RITIS again being the proven template for coalition-hosted shared services</td><td><span class="tag ok">registry + archive exist</span> · subscriptions are new</td></tr>
+<tr><td>Consumption</td><td>Corridor dashboards and TMC integrations, routing and nav partners, in-cab systems consuming truck-route layers, and the <b>national needs ledger</b> — FHWA/BTS analytics over the archive</td><td>Anyone; the ledger is a query over public GeoParquet, not a system to build</td><td>follows from the above</td></tr>
+</tbody></table></div>
+
+<p>Endpoint shapes, concretely (illustrative hosts):</p>
+<div class="tbl"><table>
+<thead><tr><th>Endpoint</th><th>Pattern</th></tr></thead>
+<tbody>
+<tr><td>State feed</td><td><code>https://feeds.iowadot.gov/wzdx/v4.2/feed.geojson</code> — unchanged URL, events now carry <code>location_references: [{"type":"gers","gers_id":…,"overture_release":"2026-11-18.0"}]</code></td></tr>
+<tr><td>GERS resolver</td><td><code>https://api.overturemaps.org/gers/{id}</code> · <code>…/gers/match?lon=&amp;lat=&amp;route=I-80</code> · changelog: <code>…/gers/{id}/history</code></td></tr>
+<tr><td>Registry</td><td><code>https://data.transportation.gov/api/feeds?corridor=I-80&amp;standard=cwz</code> — discovery, not storage</td></tr>
+<tr><td>Subscriptions</td><td><code>POST https://events.corridors.dot.gov/subscriptions {"segments":[…gers ids…],"webhook":…}</code> — a TMC, a dispatcher, or a state construction office subscribes to the stretch it cares about</td></tr>
+<tr><td>Archive / ledger</td><td><code>s3://usdot-its-corridor-archive/feed=ia511/date=2026-11-22/*.parquet</code> — the same pattern Overture and the existing ITS work-zone sandbox use; the needs ledger is DuckDB-grade SQL over this plus Overture</td></tr>
+</tbody></table></div>
+
+<div class="callout">
+  <h3>Why this is a small ask</h3>
+  <p>Count the genuinely new components: the <code>location_references</code> field (a spec change), the open-source tagger sidecar (this demo's pipeline, productionized), a resolver API on infrastructure Overture already runs, a registry column, and one subscription service. Everything else — state feeds, federal registry and archive, Overture's releases, RITIS-style shared hosting — exists and keeps its current owner and funding. That is what makes "operational before the end of the administration" a credible sentence rather than a slide.</p>
+</div>
+
+<h2><span class="no">7</span>Timeline</h2>
+<div class="timeline">
+  <div class="tstep hard"><div class="d">Nov 23 · hard date</div><div class="t">GADC informational webinar (12–1 pm ET)</div><p>Attend; confirm eligibility structure for foundation-as-partner and ask whether location referencing is in scope for data plans.</p></div>
+  <div class="tstep"><div class="d">Nov 24 – Dec 5</div><div class="t">Follow up Kelley Severns (OST-R) + pick the anchor state</div><p>Use the demo as the conversation piece. Parallel soundings: Caltrans D6 contacts (Ryan) and NDOT I-80 coalition (via AtkinsRéalis or TPF-1799 champions). Confirm December DC session details.</p></div>
+  <div class="tstep hard"><div class="d">Dec 28 · hard date</div><div class="t">GADC applications due</div><p>Realistic goal: Overture named as data-infrastructure partner in one state's application, with the GERS profile + conciliation table as a work package. If no state bites in time, the profile work proceeds anyway — GADC is accelerant, not dependency.</p></div>
+  <div class="tstep"><div class="d">Jan 6–8</div><div class="t">CES, Las Vegas</div><p>USDOT presence expected <span class="unc">[unconfirmed]</span>. The AV-manufacturer pitch (§4, venues 2 and 5): one meeting each with Waymo (extends their Waze pothole precedent), Mobileye (REM→agency products), and an AVSC contact.</p></div>
+  <div class="tstep"><div class="d">Q1 2027</div><div class="t">CWZ extension proposal + live-feed pilot</div><p>File the <code>location_references</code> proposal; stand up the Caltrans or Nevada live-feed demo; GADC awards announced — be in the room either way.</p></div>
+</div>
+
+<footer class="wrap" style="padding-left:0;padding-right:0">
+  Sources: linked inline. Demo conflation inputs: Iowa DOT public ArcGIS feature services (CARS511_Iowa_View, CARS511_NE_Events_View, CARS511_MN_Events_View, 511_MO_View, 511_IA_Event_Lines_View) and Overture release 2026-11-18.0 transportation + divisions themes. Research compiled Nov 22, 2026 from USDOT/FHWA/ITS-JPO publications, Federal Register, AASHTO, ITE/CWZ, SAE, ERTICO/SENSORIS, Overture release notes, and press coverage; items marked [unconfirmed] could not be verified against primary sources from this environment and should be checked before external use. Companion demo: GERS Digital Corridor Pilot (interactive map).
+</footer>
+</div>
+
+</body>
+</html>
