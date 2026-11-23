@@ -14,7 +14,7 @@ USDOT Digital Corridors Initiative.
 
 Data sources: Iowa DOT public ArcGIS services (CARS 511 multi-state views + Missouri 511)
 and Overture Maps release 2026-11-18.0 (transportation + divisions themes).
-Event data is a snapshot fetched 2026-11-22.
+Event data is fetched live in the viewer's browser at page load (labeled snapshot of 2026-11-22 as fallback).
 
 ## Adopt this for your state
 

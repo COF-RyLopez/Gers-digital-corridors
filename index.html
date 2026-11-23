@@ -76,7 +76,7 @@ footer{padding-block:30px 44px;color:var(--muted);font-size:12.5px;border-top:1p
   <div class="kicker">Overture Maps Foundation community · Discussion draft</div>
   <h1>GERS as the join key for USDOT's Digital Corridors</h1>
   <p class="standfirst">Deep-dive research on the Digital Corridors Initiative, the AV data-sharing standards landscape, a working demo, and a spec for what Overture should build and propose — <b>with a $20M federal funding window that closes December 28, 2026</b>.</p>
-  <div class="meta"><span>Discussion draft — not an official position of the Overture Maps Foundation or USDOT</span><span>November 22, 2026</span></div>
+  <div class="meta"><span>Discussion draft — not an official position of the Overture Maps Foundation or USDOT</span><span>Updated November 23, 2026</span></div>
 </header>
 
 <div class="callout urgent">
@@ -101,7 +101,7 @@ footer{padding-block:30px 44px;color:var(--muted);font-size:12.5px;border-top:1p
     <li><a href="usdot/"><b>USDOT handoff</b></a> — what was demonstrated and how to carry it to OEMs, ADAS platforms, freight, and local agencies as subscribers.</li>
     <li>This page is the strategy brief itself — link it directly.</li>
   </ul>
-  <p><b>GERS Digital Corridor Pilot</b> — the headline view conflates <b>306 live 511 events published by four state DOTs (Iowa 114, Missouri 143, Minnesota 29, Nebraska 20</b>; fetched Nov 22, 2026 from Iowa DOT's public ArcGIS services, IA/NE/MN via the states' own multi-state CARS consortium) onto <b>11,997 real Overture motorway segments</b> across the I-80 / I-35 / I-29 / I-70 / I-94 freight network. The results are the proof: <b>99% of interstate point events auto-matched (371/375), median snap distance 3.4 meters</b>, with match provenance (method, snap distance, route agreement) carried on every join. I-35 events read as one keyed spine through Missouri, Iowa, and Minnesota. Iowa's closure records keep the state's own RAMS <code>ROUTE_ID</code> — the authoritative LRS is untouched; GERS is only the glue. Four states, four feeds in four shapes (Missouri's has no structured route field at all — we parsed it from headline text, which is itself the argument), one keyed corridor dataset, zero bilateral integration. A second tab keeps the Fresno SR-99 concept showing the AV-fleet feedback loop (simulated — no public AV observation feed exists yet, which is the point of §4).</p>
+  <p><b>GERS Digital Corridor Pilot</b> — now live and national. The map loads <b>every signed US interstate</b> (77,220 Overture segments) and your browser fetches current 511/WZDx events from every state publishing an openly reachable feed — <b>seven states live as of Nov 23, 2026</b> (IA·NE·MN·MO·GA·UT·NM; ~25 wired, each lighting up as its host permits browser access), conflating them to GERS IDs <i>on the page</i>: ~3,500 live events, ~1,500 matched at <b>2.3 m median snap</b>, provenance on every join. Validated batch run (Nov 22): 99% of interstate point events auto-matched. States keep their schemas and LRS — Iowa's RAMS <code>ROUTE_ID</code> rides through untouched; Missouri's feed has no structured route field at all, which is itself the argument. The <a href="demo/feeds/">feed tester</a> measures the whole USDOT registry from any visitor's browser. A second tab keeps the Fresno SR-99 AV-feedback concept (simulated — no public AV observation feed exists yet, which is the point of §4).</p>
 </div>
 
 <h2><span class="no">1</span>What the Digital Corridors Initiative actually is</h2>
@@ -257,7 +257,7 @@ footer{padding-block:30px 44px;color:var(--muted);font-size:12.5px;border-top:1p
 <tr><td>GERS resolver</td><td><code>https://api.overturemaps.org/gers/{id}</code> · <code>…/gers/match?lon=&amp;lat=&amp;route=I-80</code> · changelog: <code>…/gers/{id}/history</code></td></tr>
 <tr><td>Registry</td><td><code>https://data.transportation.gov/api/feeds?corridor=I-80&amp;standard=cwz</code> — discovery, not storage</td></tr>
 <tr><td>Subscriptions</td><td><code>POST https://events.corridors.dot.gov/subscriptions {"segments":[…gers ids…],"webhook":…}</code> — a TMC, a dispatcher, or a state construction office subscribes to the stretch it cares about</td></tr>
-<tr><td>Archive / ledger</td><td><code>s3://usdot-its-corridor-archive/feed=ia511/date=2026-11-22/*.parquet</code> — the same pattern Overture and the existing ITS work-zone sandbox use; the needs ledger is DuckDB-grade SQL over this plus Overture</td></tr>
+<tr><td>Archive / ledger</td><td><code>s3://usdot-its-corridor-archive/feed=ia511/date=2026-11-23/*.parquet</code> — the same pattern Overture and the existing ITS work-zone sandbox use; the needs ledger is DuckDB-grade SQL over this plus Overture</td></tr>
 </tbody></table></div>
 
 <div class="callout">
@@ -275,7 +275,7 @@ footer{padding-block:30px 44px;color:var(--muted);font-size:12.5px;border-top:1p
 </div>
 
 <footer class="wrap" style="padding-left:0;padding-right:0">
-  Sources: linked inline. Demo conflation inputs: Iowa DOT public ArcGIS feature services (CARS511_Iowa_View, CARS511_NE_Events_View, CARS511_MN_Events_View, 511_MO_View, 511_IA_Event_Lines_View) and Overture release 2026-11-18.0 transportation + divisions themes. Research compiled Nov 22, 2026 from USDOT/FHWA/ITS-JPO publications, Federal Register, AASHTO, ITE/CWZ, SAE, ERTICO/SENSORIS, Overture release notes, and press coverage; items marked [unconfirmed] could not be verified against primary sources from this environment and should be checked before external use. Companion demo: GERS Digital Corridor Pilot (interactive map).
+  Sources: linked inline. Demo conflation inputs: the publishing states' own public feeds (ArcGIS services for IA/NE/MN/MO/GA/UT/NM, Kentucky's WZDx on GCS, and every open-URL feed in USDOT's Work Zone Data Feed Registry) joined to Overture release 2026-11-18.0 transportation + divisions themes. Research compiled Nov 22–23, 2026 from USDOT/FHWA/ITS-JPO publications, Federal Register, AASHTO, ITE/CWZ, SAE, ERTICO/SENSORIS, Overture release notes, and press coverage; items marked [unconfirmed] could not be verified against primary sources from this environment and should be checked before external use. Companion demo: GERS Digital Corridor Pilot (interactive map).
 </footer>
 </div>
 
