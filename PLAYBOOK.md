@@ -5,8 +5,9 @@ to a shared national reference — in about a day, with the tools in this reposi
 
 The [live demo](https://cof-rylopez.github.io/Gers-digital-corridors/demo/) now runs
 **live at multi-state scale**: every signed US interstate (77,220 Overture segments)
-as the national base, with current 511/WZDx events from **up to eight state DOTs**
-(Iowa, Nebraska, Minnesota, Missouri, Georgia, Utah, New Mexico, Kentucky) fetched by
+as the national base, with current 511/WZDx events from **seven state DOTs**
+(Iowa, Nebraska, Minnesota, Missouri, Georgia, Utah, New Mexico — Kentucky is wired,
+pending a CORS header on its host) fetched by
 the viewer's own browser and conflated to GERS **on the page, at load time** — in
 testing, ~3,500 live events with ~1,500 matched at 2–3 m median snap, provenance on
 every join. The [feed tester](https://cof-rylopez.github.io/Gers-digital-corridors/demo/feeds/)
@@ -102,7 +103,7 @@ AV fleet observations.
 The national version of this is not a system anyone has to build — it is this
 recipe, run ~50 times, plus USDOT's existing feed registry. The measured status
 (from the [feed tester](https://cof-rylopez.github.io/Gers-digital-corridors/demo/feeds/)
-and this project's triage of the registry, Nov 2026): **8 states live on the map**,
+and this project's triage of the registry, Nov 2026): **7 states live on the map** (plus Kentucky wired, host CORS pending),
 ~a dozen more publish open feeds that only need a browser-reachability (CORS) header
 or one config entry, **14 feeds sit behind free API keys** (the case for a thin
 shared relay), and the rest don't publish yet. If you run this playbook on your
