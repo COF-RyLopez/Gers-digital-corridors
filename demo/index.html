@@ -9,65 +9,67 @@
 /* Layout: header band, corridor tabs, stats strip, map + entity-card panel, explainer footer */
 :root{
   --bg:#f4f6f8; --surface:#ffffff; --fg:#1a2129; --muted:#5b6672; --line:#d9dfe6;
-  --accent:#0b63b8;            /* interstate-shield blue */
-  --wz:#e8720c;                /* work-zone orange */
-  --av:#0e8f7e;                /* AV-fleet teal */
-  --alert:#c62f2f;             /* detected, not in state feed */
-  --ia:#7c5cc4; --ne:#2a8a46; --mn:#0e7fa8; --mo:#c2434f;  /* state hues for event origin */
-  --map-bg:#e8ecef; --map-road:#aab6c2; --chip:#eef2f5; --stateA:#dfe5ea; --stateB:#e6e3ee;
-  --display:'Overpass',system-ui,sans-serif;  /* Overpass descends from FHWA Highway Gothic */
-  --body:'Inter',system-ui,sans-serif;
-  --mono:'Overpass Mono',ui-monospace,monospace;
+  --accent:#0b63b8; --wz:#e8720c; --av:#0e8f7e; --alert:#c62f2f;
+  --ia:#7c5cc4; --ne:#2a8a46; --mn:#0e7fa8; --mo:#c2434f;
+  --live:#1f9d55; --cam:#8a63d2; --sensor-ok:#2a8a46; --sensor-mid:#e8720c; --sensor-hi:#c62f2f;
+  --map-bg:#e8ecef; --map-road:#aab6c2; --map-road-dim:#c6cfd6; --chip:#eef2f5; --stateA:#dfe5ea; --stateB:#e6e3ee;
+  --display:'Overpass',system-ui,sans-serif; --body:'Inter',system-ui,sans-serif; --mono:'Overpass Mono',ui-monospace,monospace;
 }
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
   --bg:#14181d; --surface:#1c2228; --fg:#e8edf2; --muted:#93a0ad; --line:#2d353e;
   --accent:#5aa4e0; --wz:#f08a2e; --av:#35b3a0; --alert:#e05555; --ia:#a78ce0; --ne:#4fb06c; --mn:#4db3d6; --mo:#e0707a;
-  --map-bg:#1a1f25; --map-road:#49555f; --chip:#242c34; --stateA:#20262d; --stateB:#242231; color-scheme:dark }}
+  --live:#3dc97a; --cam:#a78ce0; --sensor-ok:#4fb06c; --sensor-mid:#f08a2e; --sensor-hi:#e05555;
+  --map-bg:#1a1f25; --map-road:#49555f; --map-road-dim:#303a43; --chip:#242c34; --stateA:#20262d; --stateB:#242231; color-scheme:dark }}
 :root[data-theme="dark"]{
   --bg:#14181d; --surface:#1c2228; --fg:#e8edf2; --muted:#93a0ad; --line:#2d353e;
   --accent:#5aa4e0; --wz:#f08a2e; --av:#35b3a0; --alert:#e05555; --ia:#a78ce0; --ne:#4fb06c; --mn:#4db3d6; --mo:#e0707a;
-  --map-bg:#1a1f25; --map-road:#49555f; --chip:#242c34; --stateA:#20262d; --stateB:#242231; color-scheme:dark }
+  --live:#3dc97a; --cam:#a78ce0; --sensor-ok:#4fb06c; --sensor-mid:#f08a2e; --sensor-hi:#e05555;
+  --map-bg:#1a1f25; --map-road:#49555f; --map-road-dim:#303a43; --chip:#242c34; --stateA:#20262d; --stateB:#242231; color-scheme:dark }
 body{background:var(--bg);color:var(--fg);font-family:var(--body);margin:0;font-size:14.5px;line-height:1.5}
 .wrap{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0}
 header.wrap{padding-block:22px 12px;border-bottom:1px solid var(--line)}
 .kicker{font-family:var(--display);font-weight:600;letter-spacing:.12em;text-transform:uppercase;font-size:11px;color:var(--muted)}
+.kicker a{color:var(--accent)}
 h1{font-family:var(--display);font-weight:800;font-size:clamp(22px,4vw,30px);margin:.15em 0 .1em;text-wrap:balance}
-.sub{color:var(--muted);max-width:72ch;margin:0}
+.sub{color:var(--muted);max-width:76ch;margin:0}
 .sub b{color:var(--fg)}
 .tabs{display:flex;gap:8px;padding-block:12px 0;flex-wrap:wrap}
 .tab{font:600 13px var(--display);border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:8px;padding:8px 14px;cursor:pointer}
 .tab[aria-selected="true"]{border-color:var(--accent);color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
 .tab:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.tab .live{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--ne);margin-right:6px;vertical-align:1px}
+.tab .live{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--live);margin-right:6px;vertical-align:1px}
 .stats{display:flex;flex-wrap:wrap;gap:10px;padding-block:12px}
 .stat{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 14px;min-width:104px}
 .stat .n{font-family:var(--display);font-weight:800;font-size:21px;font-variant-numeric:tabular-nums}
 .stat .l{font-size:11px;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
-.stat.wz .n{color:var(--wz)} .stat.av .n{color:var(--av)} .stat.alert .n{color:var(--alert)} .stat.ok .n{color:var(--ne)}
+.stat.wz .n{color:var(--wz)} .stat.av .n{color:var(--av)} .stat.alert .n{color:var(--alert)} .stat.ok .n{color:var(--live)}
 main{display:grid;grid-template-columns:minmax(0,1fr) 390px;gap:14px;padding-block:0 14px;align-items:stretch}
 @media (max-width:880px){ main{grid-template-columns:minmax(0,1fr)} }
-#mapbox{position:relative;background:var(--map-bg);border:1px solid var(--line);border-radius:10px;overflow:hidden;min-height:420px;height:min(62vh,620px)}
+#mapbox{position:relative;background:var(--map-bg);border:1px solid var(--line);border-radius:10px;overflow:hidden;min-height:420px;height:min(66vh,680px)}
 #map{position:absolute;inset:0}
 .maplibregl-map{position:relative;overflow:hidden;width:100%;height:100%}
 .maplibregl-canvas-container{position:absolute;inset:0}
 .maplibregl-canvas{position:absolute;left:0;top:0}
 .maplibregl-control-container{display:none}
-.legend{position:absolute;left:10px;bottom:10px;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-size:12px;display:grid;gap:4px;z-index:5;max-width:230px}
+.legend{position:absolute;left:10px;bottom:10px;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-size:12px;display:grid;gap:4px;z-index:5;max-width:250px}
 .legend .r{display:flex;align-items:center;gap:8px}
 .sw{width:22px;height:0;border-top:4px solid var(--map-road);border-radius:2px;flex:none}
-.sw.wz{border-top-color:var(--wz)} .sw.alert{border-top-color:var(--alert)}
+.sw.dim{border-top-color:var(--map-road-dim)} .sw.wz{border-top-color:var(--wz)} .sw.alert{border-top-color:var(--alert)}
 .dot{width:10px;height:10px;border-radius:50%;flex:none}
-.maphint{position:absolute;top:10px;left:10px;z-index:5;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:5px 10px;font-size:12px;color:var(--muted);max-width:70%}
-aside{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;min-width:0;display:flex;flex-direction:column;gap:12px;overflow:auto;max-height:min(62vh,620px)}
+.sq{width:9px;height:9px;flex:none;transform:rotate(45deg)}
+.maphint{position:absolute;top:10px;left:10px;z-index:5;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:5px 10px;font-size:12px;color:var(--muted);max-width:75%}
+.maphint .lv{color:var(--live);font-weight:700}
+aside{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;min-width:0;display:flex;flex-direction:column;gap:12px;overflow:auto;max-height:min(66vh,680px)}
 @media (max-width:880px){ aside{max-height:none} }
 aside h2{font-family:var(--display);font-size:15px;font-weight:700;margin:0;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .gid{font-family:var(--mono);font-size:12px;background:var(--chip);border:1px solid var(--line);border-radius:6px;padding:6px 8px;word-break:break-all;display:flex;gap:8px;align-items:center;justify-content:space-between}
 .gid button{font:600 11px var(--body);border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:5px;padding:3px 8px;cursor:pointer;flex:none}
 .gid button:focus-visible{outline:2px solid var(--accent)}
 .rec{border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:7px;padding:10px 12px}
-.rec.wz{border-left-color:var(--wz)} .rec.av{border-left-color:var(--av)} .rec.auth{border-left-color:var(--muted)} .rec.alert{border-left-color:var(--alert)} .rec.prov{border-left-color:var(--ne)}
+.rec.wz{border-left-color:var(--wz)} .rec.av{border-left-color:var(--av)} .rec.auth{border-left-color:var(--muted)} .rec.alert{border-left-color:var(--alert)} .rec.prov{border-left-color:var(--live)} .rec.cam{border-left-color:var(--cam)}
 .rec h3{margin:0 0 4px;font:700 12px var(--display);letter-spacing:.06em;text-transform:uppercase}
 .rec h3 .src{font:500 11px var(--body);letter-spacing:0;text-transform:none;color:var(--muted);float:right}
+.rec img{max-width:100%;border-radius:6px;border:1px solid var(--line);margin-top:6px}
 .kv{display:grid;grid-template-columns:auto 1fr;gap:2px 12px;font-size:12.5px;margin:0}
 .kv dt{color:var(--muted)} .kv dd{margin:0;min-width:0;overflow-wrap:anywhere}
 .kv dd code{font-family:var(--mono);font-size:11.5px;background:var(--chip);border-radius:4px;padding:.05em .3em}
@@ -84,26 +86,25 @@ aside h2{font-family:var(--display);font-size:15px;font-weight:700;margin:0;disp
 .badge.ne{background:color-mix(in srgb,var(--ne) 14%,transparent);color:var(--ne)}
 .badge.mn{background:color-mix(in srgb,var(--mn) 14%,transparent);color:var(--mn)}
 .badge.mo{background:color-mix(in srgb,var(--mo) 14%,transparent);color:var(--mo)}
+.badge.lv{background:color-mix(in srgb,var(--live) 16%,transparent);color:var(--live)}
 .seglink{font-family:var(--mono);font-size:11px;color:var(--accent);cursor:pointer;text-decoration:underline;text-underline-offset:2px;background:none;border:0;padding:0;text-align:left;word-break:break-all}
 .how{padding-block:8px 30px;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
 .how .card{border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:var(--surface)}
 .how h3{font-family:var(--display);font-size:14px;margin:0 0 6px}
 .how p{margin:0;color:var(--muted);font-size:13px}
-.note{color:var(--muted);font-size:12px;padding-block:0 26px;max-width:95ch}
+.note{color:var(--muted);font-size:12px;padding-block:0 26px;max-width:100ch}
 .note code{font-family:var(--mono);font-size:11.5px}
 a{color:var(--accent)}
 @media (prefers-reduced-motion: reduce){ *{transition:none!important} }
 </style>
 </head>
 <body>
-
-
 <header class="wrap">
   <div class="kicker">Overture Maps Foundation community · Digital Corridors concept pilot · <a href="../">strategy brief</a></div>
   <h1>One road segment. One ID. Every dataset.</h1>
-  <p class="sub"><b>Real, current 511 events published by four state DOTs — Iowa, Nebraska, Minnesota, and Missouri — conflated once to Overture GERS IDs</b> across the I-80 / I-35 / I-29 / I-70 / I-94 freight network. 99% of interstate point events auto-matched, median snap distance 3.4 meters; I-35 events read as one keyed spine through Missouri, Iowa, and Minnesota. A container leaving the <b>Port of Long Beach</b> crosses a dozen jurisdictions' data systems before the heartland — joined on GERS, its route reads as one dataset, so a dispatcher can plan around construction before the trip the way airlines plan around weather. Each state keeps its own schema and linear referencing (Iowa's RAMS route IDs come through untouched); the GERS ID is only the join key. Click any segment or event.</p>
+  <p class="sub"><b>Every interstate in the United States</b> on one keyed Overture network — with <b>live 511 events from four state DOTs</b> (Iowa, Nebraska, Minnesota, Missouri) fetched by your own browser and <b>conflated to GERS IDs on this page, right now</b>, plus live traffic sensors and DOT cameras. Each state keeps its own schema and linear referencing; the GERS ID is only the join key. The dark network is the invitation: every state that publishes a feed can light up. Click any segment, event, sensor, or camera.</p>
   <div class="tabs" role="tablist">
-    <button class="tab" role="tab" id="tab-i80" aria-selected="true"><span class="live"></span>Freight corridors · IA · NE · MN · MO — real state data</button>
+    <button class="tab" role="tab" id="tab-i80" aria-selected="true"><span class="live"></span>National network · live four-state feeds</button>
     <button class="tab" role="tab" id="tab-fresno">SR-99 · Fresno — AV feedback concept</button>
   </div>
 </header>
@@ -113,18 +114,18 @@ a{color:var(--accent)}
 <main class="wrap">
   <div id="mapbox">
     <div id="map" role="application" aria-label="Corridor map"></div>
-    <div class="maphint" id="hint">Loading corridor…</div>
+    <div class="maphint" id="hint">Loading the national network…</div>
     <div class="legend" id="legend"></div>
   </div>
   <aside id="panel" aria-live="polite">
-    <div class="empty">Select a segment or event marker on the map to open its GERS entity card.</div>
+    <div class="empty">Select a segment, event, sensor, or camera on the map to open its card.</div>
   </aside>
 </main>
 
 <section class="wrap how">
-  <div class="card"><h3>Why an ID beats a geometry handshake</h3><p>Today every producer ships lat/lon or its own linear reference, and every consumer re-conflates against its own basemap — per feed, per vendor, per state. A shared GERS reference makes the join a key lookup. The conflation shown here ran once, and its provenance (method, snap distance, route agreement) travels with each match.</p></div>
-  <div class="card"><h3>Freight plans around it, like aviation does</h3><p>Airlines plan every departure around weather and NOTAMs; trucking has no equivalent for the road network. A container out of the Port of Long Beach crosses a dozen jurisdictions before the Midwest — with four states' events on one keyed network, a dispatcher can route pre-trip around construction the way an airline routes around a storm. Add authoritative truck-route and restriction data on the same IDs and the return channel exists too — and once states subscribe to each other's event layers, a storm on one corridor can automatically trigger construction holds and debris surges on the detour routes, the way aviation flow management holds and reroutes around weather.</p></div>
-  <div class="card"><h3>A return path for vehicle fleets</h3><p>AV and ADAS fleets already detect cones, lane shifts, workers, hard-braking clusters, and lane-level volumes. Referenced to GERS (as a WZDx/CWZ location method or an SAE J3224 SDSM profile), those observations confirm state feeds — and surface what the state feed missed. The Fresno tab shows that loop as a concept.</p></div>
+  <div class="card"><h3>This page is the pipeline</h3><p>No server sits behind this map. Your browser fetches the states’ own public feeds and performs the GERS conflation itself — route-aware nearest-segment matching against real Overture geometry, with method and snap distance on every join. If the feeds are unreachable, the page falls back to a labeled snapshot.</p></div>
+  <div class="card"><h3>Freight plans around it, like aviation does</h3><p>Airlines plan every departure around weather and NOTAMs on one national picture. With every state’s events on one keyed network, a dispatcher can route a 2,000-mile trip around construction before the truck rolls — and corridor operators can coordinate like flow management.</p></div>
+  <div class="card"><h3>A return path for vehicle fleets</h3><p>AV and ADAS fleets already detect cones, lane shifts, workers, and hard braking. Referenced to GERS, those observations confirm state feeds — and surface what the feeds missed. The Fresno tab shows that loop as a concept.</p></div>
 </section>
 
 <p class="wrap note" id="srcnote"></p>
@@ -136,18 +137,23 @@ a{color:var(--accent)}
   const esc = s => String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   const hint = document.getElementById('hint'), panel=document.getElementById('panel');
   let map=null, cur=null, cache={};
+  const AGOL='https://services.arcgis.com/8lRhdTsQyJpO52F1/arcgis/rest/services';
+  const STN={IA:['Iowa DOT','ia'],NE:['Nebraska DOT','ne'],MN:['Minnesota DOT','mn'],MO:['Missouri DOT','mo']};
 
   const NOTES = {
-    i80: `<b>Real data.</b> Events fetched Nov 22, 2026 from Iowa DOT's public ArcGIS services (<code>CARS511_Iowa_View</code>, <code>CARS511_NE_Events_View</code>, <code>CARS511_MN_Events_View</code>, <code>511_MO_View</code>, <code>511_IA_Event_Lines_View</code>) — live 511 records published by the Iowa, Nebraska, Minnesota, and Missouri DOTs (IA/NE/MN via the multi-state CARS consortium). Road segments and GERS IDs are real, from Overture release <code>2026-11-18.0</code> (mainline motorways shown; ramps omitted for clarity). Conflation ran once (route-aware nearest-segment for points, buffer-overlap for closure lines); 99% of interstate point events matched (371/375), median snap 3.4&nbsp;m. Missouri's feed carries no structured route field — its route is parsed from the headline text, itself a small example of why a shared reference beats text parsing. Iowa closure lines carry the state's own RAMS <code>ROUTE_ID</code> — shown untouched on each card. Events are a snapshot; a production pipeline would re-run per feed refresh.`,
-    fresno: `Road segments and GERS IDs are real, queried from Overture release <code>2026-11-18.0</code> for the SR-99/41/168/180 corridors through Fresno (Caltrans District 6). Work-zone events, roadway attributes, and AV observations on this tab are <b>illustrative sample data</b> in the shape of the real feeds (WZDx v4.x, Caltrans LRS/HPMS, SAE J3224-style detections) — they show the AV-fleet feedback loop no public feed provides yet. The I-80 tab is the same join running on real state data.`
+    live: `<b>Live.</b> Events, sensors, and cameras are fetched by your browser directly from Iowa DOT's public ArcGIS services (<code>CARS511_Iowa_View</code>, <code>CARS511_NE_Events_View</code>, <code>CARS511_MN_Events_View</code>, <code>511_MO_View</code>, <code>511_IA_Event_Lines_View</code>, <code>RWIS_Traffic_Data_View</code>, <code>Traffic_Cameras_View</code> — live 511/CARS records published by the four state DOTs) and conflated to Overture GERS segment IDs <b>in this page</b> (route-aware nearest-segment; provenance on every join). The national interstate network (all signed US interstates) and detailed match segments are real Overture geometry, release <code>2026-11-18.0</code>. Events far from the detailed four-state match region show as unmatched rings — the expansion opportunity, visible. Traffic = RWIS roadway sensors (occupancy) and DOT cameras with live snapshots; no statewide speed feed is published openly, so no speed coloring is claimed.`,
+    snap: `<b>Snapshot fallback.</b> The live feeds could not be fetched just now (network or service hiccup), so this view shows the labeled snapshot of Nov 22, 2026: 306 events from the same four state feeds, conflated to GERS with 99% interstate point match and 3.4 m median snap. Reload to retry live.`,
+    fresno: `Road segments and GERS IDs are real, queried from Overture release <code>2026-11-18.0</code> for the SR-99/41/168/180 corridors through Fresno (Caltrans District 6). Work-zone events, roadway attributes, and AV observations on this tab are <b>illustrative sample data</b> in the shape of the real feeds (WZDx v4.x, Caltrans LRS/HPMS, SAE J3224-style detections) — they show the AV-fleet feedback loop no public feed provides yet. The national tab is the same join running live.`
   };
   const LEGENDS = {
-    i80: `<div class="r"><span class="sw"></span> Overture segment (GERS)</div>
-          <div class="r"><span class="sw wz"></span> Segment with live 511 event</div>
-          <div class="r"><span class="dot" style="background:var(--ia)"></span> Iowa DOT event</div>
-          <div class="r"><span class="dot" style="background:var(--ne)"></span> Nebraska DOT event</div>
-          <div class="r"><span class="dot" style="background:var(--mn)"></span> Minnesota DOT event</div>
-          <div class="r"><span class="dot" style="background:var(--mo)"></span> Missouri DOT event</div>`,
+    live: `<div class="r"><span class="sw dim"></span> US interstate network (Overture)</div>
+          <div class="r"><span class="sw"></span> Detailed GERS match region</div>
+          <div class="r"><span class="sw wz"></span> Segment with live event</div>
+          <div class="r"><span class="dot" style="background:var(--ia)"></span> Iowa · <span class="dot" style="background:var(--ne)"></span> Nebraska</div>
+          <div class="r"><span class="dot" style="background:var(--mn)"></span> Minnesota · <span class="dot" style="background:var(--mo)"></span> Missouri</div>
+          <div class="r"><span class="dot" style="border:2px solid var(--alert);background:transparent"></span> Unmatched (outside detail region)</div>
+          <div class="r"><span class="dot" style="background:var(--sensor-mid)"></span> Traffic sensor (occupancy)</div>
+          <div class="r"><span class="sq" style="background:var(--cam)"></span> DOT camera (live snapshot)</div>`,
     fresno: `<div class="r"><span class="sw"></span> Overture segment (GERS)</div>
           <div class="r"><span class="sw wz"></span> Active work zone · state feed</div>
           <div class="r"><span class="dot" style="background:var(--av)"></span> AV fleet confirms zone</div>
@@ -167,112 +173,276 @@ a{color:var(--accent)}
   }
   const mid = g => { let c=g.coordinates; if(g.type==='MultiLineString') c=c[0]; return c[(c.length/2)|0]; };
   function copyBtn(id){
-    const btn=document.getElementById('cpy');
-    if(!btn) return;
+    const btn=document.getElementById('cpy'); if(!btn) return;
     btn.addEventListener('click',()=>{ navigator.clipboard.writeText(id).then(()=>{btn.textContent='Copied';setTimeout(()=>btn.textContent='Copy',1200);}).catch(()=>{ const r=document.createRange(); r.selectNodeContents(panel.querySelector('.gid span')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); }); });
   }
 
-  /* ---------------- I-80 real-data corridor ---------------- */
-  async function loadI80(){
-    if(!cache.i80){
-      const [segs, ev, states] = await Promise.all([
-        fetch('data/corridor_segments.geojson').then(r=>r.json()),
-        fetch('data/corridor_events.json').then(r=>r.json()),
-        fetch('data/states.geojson').then(r=>r.json())
-      ]);
-      const evBySeg={}, evById={};
-      for(const e of ev.events){ evById[e.eid]=e; for(const m of e.matches) (evBySeg[m.gers_id]??=[]).push(e); }
-      for(const f of segs.features) f.properties.hasEvent = !!evBySeg[f.properties.gers_id];
-      cache.i80={segs,ev,states,evBySeg,evById};
+  /* ---------- ArcGIS fetch helpers ---------- */
+  async function agol(svc, extra){
+    const feats=[]; let offset=0;
+    for(let page=0; page<4; page++){
+      const p=new URLSearchParams({f:'geojson',where:'1=1',outFields:'*',returnGeometry:'true',outSR:'4326',resultOffset:offset,resultRecordCount:1000,...extra});
+      const ctl=new AbortController(); const t=setTimeout(()=>ctl.abort(),15000);
+      const r=await fetch(`${AGOL}/${svc}/FeatureServer/0/query?${p}`,{signal:ctl.signal});
+      clearTimeout(t);
+      if(!r.ok) throw new Error(svc+' http '+r.status);
+      const d=await r.json(); const fs=d.features||[];
+      feats.push(...fs);
+      if(fs.length<1000) break;
+      offset+=1000;
     }
-    const {segs,ev,states,evBySeg,evById}=cache.i80;
-    const STN={IA:['Iowa DOT','ia'],NE:['Nebraska DOT','ne'],MN:['Minnesota DOT','mn'],MO:['Missouri DOT','mo']};
-    const bs=ev.stats.bystate;
+    return feats;
+  }
+  const SCALE=111319.4908;
+  const fixMerc = g => { // ArcGIS fake-mercator bug: coords come back as degrees/111319.49
+    const fix=c=>Array.isArray(c[0])?c.map(fix):[c[0]*SCALE,c[1]*SCALE];
+    let probe=g.coordinates; while(Array.isArray(probe[0])) probe=probe[0];
+    return Math.abs(probe[0])<1 ? {type:g.type,coordinates:fix(g.coordinates)} : g;
+  };
+  const refOf = s => { const m=/\bI-?\s?(\d{1,3})\b/.exec(s||''); return m?+m[1]:null; };
+
+  /* ---------- in-browser GERS conflation ---------- */
+  function buildIndex(segFC){
+    const cell=0.02, grid=new Map();
+    const items=segFC.features.map((f,i)=>{
+      let xs=1e9,ys=1e9,xe=-1e9,ye=-1e9;
+      const parts=f.geometry.type==='MultiLineString'?f.geometry.coordinates:[f.geometry.coordinates];
+      for(const part of parts) for(const [x,y] of part){ if(x<xs)xs=x; if(x>xe)xe=x; if(y<ys)ys=y; if(y>ye)ye=y; }
+      const it={f,parts,ref:refOf(f.properties.route)};
+      for(let cx=Math.floor(xs/cell); cx<=Math.floor(xe/cell); cx++)
+        for(let cy=Math.floor(ys/cell); cy<=Math.floor(ye/cell); cy++){
+          const k=cx+'_'+cy; (grid.get(k)??grid.set(k,[]).get(k)).push(it);
+        }
+      return it;
+    });
+    return {grid, cell};
+  }
+  function distToSeg(lon,lat,parts){ // meters, local equirectangular
+    const kx=111320*Math.cos(lat*Math.PI/180), ky=110540; let best=1e12;
+    for(const part of parts) for(let i=1;i<part.length;i++){
+      const ax=(part[i-1][0]-lon)*kx, ay=(part[i-1][1]-lat)*ky, bx=(part[i][0]-lon)*kx, by=(part[i][1]-lat)*ky;
+      const dx=bx-ax, dy=by-ay, L=dx*dx+dy*dy;
+      let t=L? -(ax*dx+ay*dy)/L : 0; t=Math.max(0,Math.min(1,t));
+      const px=ax+dx*t, py=ay+dy*t, d=px*px+py*py;
+      if(d<best) best=d;
+    }
+    return Math.sqrt(best);
+  }
+  function matchPoint(idx, lon, lat, evRef, maxM){
+    const cx=Math.floor(lon/idx.cell), cy=Math.floor(lat/idx.cell);
+    let best=null;
+    for(let i=-1;i<=1;i++) for(let j=-1;j<=1;j++){
+      for(const it of (idx.grid.get((cx+i)+'_'+(cy+j))||[])){
+        const d=distToSeg(lon,lat,it.parts);
+        if(d>maxM) continue;
+        const agree=evRef!=null && it.ref===evRef;
+        if(!best || (agree&&!best.agree) || (agree===best.agree && d<best.d)) best={it,d,agree};
+      }
+    }
+    return best;
+  }
+
+  /* ---------- live loader ---------- */
+  async function loadLive(){
+    if(!cache.base){
+      hint.textContent='Loading the national network (~4 MB)…';
+      const [nat, states, segs, snap] = await Promise.all([
+        fetch('data/national_interstates.geojson').then(r=>r.json()),
+        fetch('data/us_states.json').then(r=>r.json()),
+        fetch('data/corridor_segments.geojson').then(r=>r.json()),
+        fetch('data/corridor_events.json').then(r=>r.json())
+      ]);
+      cache.base={nat,states,segs,snap,idx:buildIndex(segs)};
+    }
+    const {nat,states,segs,snap,idx}=cache.base;
+
+    // try live feeds (browser-direct); fall back to snapshot
+    let events=null, sensors=[], cams=[], liveAt=null;
+    if(!cache.liveTried){
+      hint.textContent='Fetching live feeds from four state DOTs…';
+      const defs=[
+        {svc:'CARS511_Iowa_View',state:'IA',kind:'point'},
+        {svc:'CARS511_NE_Events_View',state:'NE',kind:'point'},
+        {svc:'CARS511_MN_Events_View',state:'MN',kind:'point'},
+        {svc:'511_MO_View',state:'MO',kind:'point'},
+        {svc:'511_IA_Event_Lines_View',state:'IA',kind:'line'},
+      ];
+      const results=await Promise.allSettled([
+        ...defs.map(d=>agol(d.svc)),
+        agol('RWIS_Traffic_Data_View'),
+        agol('Traffic_Cameras_View')
+      ]);
+      const evResults=results.slice(0,5);
+      if(evResults.some(r=>r.status==='fulfilled')){
+        const seen=new Set(); events=[];
+        evResults.forEach((r,i)=>{
+          if(r.status!=='fulfilled') return;
+          const d=defs[i];
+          for(const f of r.value){
+            let g=f.geometry; if(!g||!g.coordinates) continue;
+            if(d.kind==='line') g=fixMerc(g);
+            const p=f.properties||{};
+            const eid=String(p.ID||d.svc+'-'+p.OBJECTID);
+            if(seen.has(eid)) continue; seen.add(eid);
+            const routeTxt=p.Route||((p.HEADLINE||'')+' '+(p.MESSAGE||''));
+            const evRef=refOf(routeTxt);
+            const probes = d.kind==='line'
+              ? (()=>{let c=g.coordinates; if(Array.isArray(c[0][0])) c=c[0]; return [c[0],c[(c.length/2)|0],c[c.length-1]];})()
+              : [g.coordinates];
+            const matches=[]; const mseen=new Set();
+            for(const [lon,lat] of probes){
+              const m=matchPoint(idx,lon,lat,evRef,d.kind==='line'?60:250);
+              if(m && !mseen.has(m.it.f.properties.gers_id)){
+                mseen.add(m.it.f.properties.gers_id);
+                matches.push({gers_id:m.it.f.properties.gers_id,snap_m:Math.round(m.d*10)/10,route_agree:m.agree,method:'nearest-segment (browser)'});
+              }
+            }
+            const pt = d.kind==='line' ? probes[1] : g.coordinates;
+            events.push({eid,state:d.state,kind:d.kind,route:p.Route||null,iref:evRef,style:p.STYLE,
+              headline:p.headline||p.HEADLINE,phrase:p.phrase,cause:(p.cause||'').trim()||null,link:p.linktxt||null,
+              route_id_lrs:p.ROUTE_ID||null,direction:p.direction||p.short_direction||null,
+              updated:p.UpdateDate?String(p.UpdateDate):null, matches, geometry:{type:'Point',coordinates:pt}});
+          }
+        });
+        liveAt=new Date();
+      }
+      if(results[5].status==='fulfilled') sensors=results[5].value.filter(f=>f.geometry);
+      if(results[6].status==='fulfilled') cams=results[6].value.filter(f=>f.geometry&&f.properties&&/^I-/.test(f.properties.Route||''));
+      cache.liveTried={events,sensors,cams,liveAt};
+    }else{
+      ({events,sensors,cams,liveAt}=cache.liveTried);
+    }
+    const isLive=!!events;
+    if(!isLive) events=snap.events.map(e=>({...e, geometry: e.kind==='point'?e.geometry:{type:'Point',coordinates:mid(e.geometry)}}));
+
+    const evById={}, evBySeg={};
+    for(const e of events){ evById[e.eid]=e; for(const m of e.matches) (evBySeg[m.gers_id]??=[]).push(e); }
+    for(const f of segs.features) f.properties.hasEvent=!!evBySeg[f.properties.gers_id];
+    const matched=events.filter(e=>e.matches.length), unmatched=events.filter(e=>!e.matches.length);
+    const snaps=matched.flatMap(e=>e.matches.map(m=>m.snap_m)).sort((a,b)=>a-b);
+    const bs={IA:0,NE:0,MN:0,MO:0}; for(const e of events) bs[e.state]=(bs[e.state]||0)+1;
+
     setStats([
-      ['', segs.features.length.toLocaleString(), 'Overture segments'],
-      ['wz', ev.stats.events, 'Live 511 events'],
-      ['', `${bs.IA}·${bs.NE}·${bs.MN}·${bs.MO}`, 'IA · NE · MN · MO'],
-      ['ok', '99%', 'Interstate pt match'],
-      ['ok', ev.stats.median_snap_m+' m', 'Median snap'],
-      ['', ev.stats.segments_referenced, 'Segments referenced']
+      ['', nat.features.reduce((n,f)=>n+f.geometry.coordinates.length,0).toLocaleString()+' / 225', 'US interstate parts / routes'],
+      ['wz', events.length, isLive?'Live events now':'Snapshot events'],
+      ['', `${bs.IA||0}·${bs.NE||0}·${bs.MN||0}·${bs.MO||0}`, 'IA · NE · MN · MO'],
+      ['ok', matched.length, 'Matched to GERS'],
+      ['ok', snaps.length?(snaps[(snaps.length/2)|0]+' m'):'—', 'Median snap'],
+      ['', sensors.length+' / '+cams.length, 'Sensors / cameras live']
     ]);
-    const m=freshMap([[-97.3,36.5],[-89.2,47.0]]);
+    document.getElementById('srcnote').innerHTML=isLive?NOTES.live:NOTES.snap;
+    const m=freshMap([[-125,24.5],[-66.5,49.5]]);
     m.on('load',()=>{
       m.addSource('states',{type:'geojson',data:states});
-      m.addLayer({id:'state-fill',type:'fill',source:'states',
-        paint:{'fill-color':['match',['get','name'],'Iowa',css('--stateA'),'Nebraska',css('--stateB'),'Minnesota',css('--stateB'),'Missouri',css('--stateB'),css('--map-bg')],'fill-opacity':0.8}});
-      m.addLayer({id:'state-line',type:'line',source:'states',paint:{'line-color':css('--muted'),'line-width':1,'line-dasharray':[3,3],'line-opacity':.6}});
+      m.addLayer({id:'state-fill',type:'fill',source:'states',paint:{'fill-color':css('--stateA'),'fill-opacity':0.55}});
+      m.addLayer({id:'state-line',type:'line',source:'states',paint:{'line-color':css('--muted'),'line-width':0.7,'line-dasharray':[3,3],'line-opacity':.5}});
+      m.addSource('nat',{type:'geojson',data:nat});
+      m.addLayer({id:'nat-roads',type:'line',source:'nat',paint:{'line-color':css('--map-road-dim'),'line-width':1.1}});
       m.addSource('segs',{type:'geojson',data:segs,promoteId:'gers_id'});
       m.addLayer({id:'seg-base',type:'line',source:'segs',layout:{'line-cap':'round','line-join':'round'},
         paint:{'line-color':['case',['get','hasEvent'],css('--wz'),css('--map-road')],
-               'line-width':['case',['boolean',['feature-state','hover'],false],6,['case',['get','hasEvent'],3.5,1.6]]}});
-      // event line geometries (Iowa closures)
-      const lineFeats={type:'FeatureCollection',features:ev.events.filter(e=>e.kind==='line').map(e=>({type:'Feature',properties:{eid:e.eid,state:e.state},geometry:e.geometry}))};
-      m.addSource('evlines',{type:'geojson',data:lineFeats});
-      m.addLayer({id:'ev-lines',type:'line',source:'evlines',paint:{'line-color':css('--ia'),'line-width':2,'line-opacity':.65,'line-dasharray':[1.5,1.5]}});
-      const ptFeats={type:'FeatureCollection',features:ev.events.map(e=>({type:'Feature',properties:{eid:e.eid,state:e.state},
-        geometry: e.kind==='point'? e.geometry : {type:'Point',coordinates: mid(e.geometry)}}))};
-      m.addSource('evpts',{type:'geojson',data:ptFeats});
-      m.addLayer({id:'ev-pts',type:'circle',source:'evpts',
+               'line-width':['case',['boolean',['feature-state','hover'],false],6,['case',['get','hasEvent'],3.2,1.7]]}});
+      m.addSource('sensors',{type:'geojson',data:{type:'FeatureCollection',features:sensors}});
+      m.addLayer({id:'sensor-pts',type:'circle',source:'sensors',
+        paint:{'circle-radius':4,'circle-color':['step',['to-number',['coalesce',['get','OCCUPANCY'],0]],css('--sensor-ok'),8,css('--sensor-mid'),18,css('--sensor-hi')],
+               'circle-stroke-width':1,'circle-stroke-color':css('--surface')}});
+      m.addSource('cams',{type:'geojson',data:{type:'FeatureCollection',features:cams}});
+      m.addLayer({id:'cam-pts',type:'circle',source:'cams',
+        paint:{'circle-radius':3.2,'circle-color':css('--cam'),'circle-stroke-width':1,'circle-stroke-color':css('--surface')}});
+      const evFC={type:'FeatureCollection',features:events.filter(e=>e.matches.length>0||e.iref!=null).map(e=>({type:'Feature',properties:{eid:e.eid,state:e.state,matched:e.matches.length>0},geometry:e.geometry}))};
+      m.addSource('ev',{type:'geojson',data:evFC});
+      m.addLayer({id:'ev-un',type:'circle',source:'ev',filter:['!',['get','matched']],
+        paint:{'circle-radius':4.5,'circle-color':'rgba(0,0,0,0)','circle-stroke-width':2,'circle-stroke-color':css('--alert')}});
+      m.addLayer({id:'ev-pts',type:'circle',source:'ev',filter:['get','matched'],
         paint:{'circle-radius':4.5,'circle-color':['match',['get','state'],'NE',css('--ne'),'MN',css('--mn'),'MO',css('--mo'),css('--ia')],
                'circle-stroke-width':1.3,'circle-stroke-color':css('--surface')}});
-      hint.textContent='Scroll to zoom · drag to pan · click a segment or event';
-      wireHover(m);
-      m.on('click','ev-pts',e=>{ openEventCard(e.features[0].properties.eid); });
-      m.on('click','seg-base',e=>{ openSegCardI80(e.features[0].properties.gers_id); });
-      m.on('mouseenter','ev-pts',()=>m.getCanvas().style.cursor='pointer');
-      m.on('mouseleave','ev-pts',()=>m.getCanvas().style.cursor='');
+      hint.innerHTML=isLive
+        ? `<span class="lv">● LIVE</span> — fetched ${liveAt.toISOString().slice(11,16)} UTC, conflated to GERS in your browser · scroll to zoom`
+        : 'Snapshot of Nov 22, 2026 (live feeds unreachable — reload to retry) · scroll to zoom';
+      let hovered=null;
+      m.on('mousemove','seg-base',e=>{ map.getCanvas().style.cursor='pointer';
+        if(hovered!==null) m.setFeatureState({source:'segs',id:hovered},{hover:false});
+        hovered=e.features[0].id; m.setFeatureState({source:'segs',id:hovered},{hover:true}); });
+      m.on('mouseleave','seg-base',()=>{ map.getCanvas().style.cursor='';
+        if(hovered!==null) m.setFeatureState({source:'segs',id:hovered},{hover:false}); hovered=null; });
+      m.on('click','ev-pts',e=>openEventCard(e.features[0].properties.eid));
+      m.on('click','ev-un',e=>openEventCard(e.features[0].properties.eid));
+      m.on('click','seg-base',e=>openSegCard(e.features[0].properties.gers_id));
+      m.on('click','sensor-pts',e=>openSensorCard(e.features[0].properties));
+      m.on('click','cam-pts',e=>openCamCard(e.features[0].properties));
+      for(const l of ['ev-pts','ev-un','sensor-pts','cam-pts']){
+        m.on('mouseenter',l,()=>m.getCanvas().style.cursor='pointer');
+        m.on('mouseleave',l,()=>m.getCanvas().style.cursor='');
+      }
     });
 
     function provRec(mt){
-      return `<div class="rec prov"><h3>Match provenance <span class="src">conflated once, Nov 22 2026</span></h3>
-        <dl class="kv"><dt>Method</dt><dd>${esc(mt.method)}</dd>
+      return `<div class="rec prov"><h3>Match provenance <span class="src">${isLive?'computed in your browser just now':'snapshot of Nov 22'}</span></h3>
+        <dl class="kv"><dt>Method</dt><dd>${esc(mt.method||'nearest-segment')}</dd>
         ${mt.snap_m!=null?`<dt>Snap</dt><dd>${mt.snap_m} m</dd>`:''}
         ${mt.overlap_m!=null?`<dt>Overlap</dt><dd>${mt.overlap_m} m</dd>`:''}
         <dt>Route check</dt><dd>${mt.route_agree?'event route = segment route ✓':'nearest geometry (ramp or unsigned segment)'}</dd></dl></div>`;
     }
     function evRec(e){
-      return `<div class="rec wz"><h3>511 event · ${STN[e.state][0]} <span class="src">state 511 — live record</span></h3>
-        <dl class="kv"><dt>Event</dt><dd>${esc(e.headline||e.phrase)}</dd>
+      return `<div class="rec wz"><h3>511 event · ${STN[e.state][0]} <span class="src">state 511 — ${isLive?'live record':'snapshot'}</span></h3>
+        <dl class="kv"><dt>Event</dt><dd>${esc(e.headline||e.phrase||'(no headline)')}</dd>
         <dt>ID</dt><dd><code>${esc(e.eid)}</code></dd>
-        <dt>Route</dt><dd>${esc(e.route)}${e.direction?' · '+esc(e.direction):''}</dd>
+        ${e.route?`<dt>Route</dt><dd>${esc(e.route)}${e.direction?' · '+esc(e.direction):''}</dd>`:''}
         ${e.cause?`<dt>Cause</dt><dd>${esc(e.cause)}</dd>`:''}
-        ${e.updated?`<dt>Updated</dt><dd>${esc(e.updated.length>12? new Date(+e.updated||e.updated).toLocaleDateString?.()||e.updated : e.updated)}</dd>`:''}
         ${e.route_id_lrs?`<dt>State LRS</dt><dd><code>${esc(e.route_id_lrs)}</code> — Iowa RAMS route ID, unchanged</dd>`:''}
-        ${e.link?`<dt>Source</dt><dd><a href="${esc(e.link)}" target="_blank" rel="noopener">${esc(e.link.replace('https://',''))}</a></dd>`:''}</dl></div>`;
+        ${e.link?`<dt>Source</dt><dd><a href="${esc(e.link)}" target="_blank" rel="noopener">${esc(String(e.link).replace('https://',''))}</a></dd>`:''}</dl></div>`;
     }
-    window._openSegI80 = openSegCardI80;
-    function openSegCardI80(id){
+    function openSegCard(id){
       const f=segs.features.find(s=>s.properties.gers_id===id); if(!f) return;
       const p=f.properties, evs=evBySeg[id]||[];
-      let h=`<h2>GERS entity ${evs.length?'<span class="badge wz">live event</span>':''}<span class="badge ${({Nebraska:'ne',Minnesota:'mn',Missouri:'mo'})[p.state]||'ia'}">${esc(p.state||'')}</span></h2>
+      let h=`<h2>GERS entity ${evs.length?'<span class="badge wz">live event</span>':''}${isLive?'<span class="badge lv">live</span>':''}</h2>
         <div class="gid"><span>${esc(id)}</span><button id="cpy">Copy</button></div>
         <div class="rec"><h3>Base segment <span class="src">Overture 2026-11-18.0</span></h3>
-          <dl class="kv"><dt>Name</dt><dd>${esc(p.name||'(unnamed ramp / link)')}</dd>
-          <dt>Class</dt><dd>${esc(p.class)}</dd>
-          ${p.route?`<dt>Route</dt><dd>${esc(p.route)}</dd>`:''}</dl></div>`;
+          <dl class="kv"><dt>Name</dt><dd>${esc(p.name||'(unnamed)')}</dd><dt>Class</dt><dd>${esc(p.class)}</dd>
+          ${p.route?`<dt>Route</dt><dd>${esc(p.route)}</dd>`:''}${p.state?`<dt>State</dt><dd>${esc(p.state)}</dd>`:''}</dl></div>`;
       for(const e of evs){ h+=evRec(e); const mt=e.matches.find(x=>x.gers_id===id); if(mt) h+=provRec(mt); }
-      if(!evs.length) h+=`<div class="empty">No live 511 event on this segment right now — base Overture data only. Any producer can attach a record by publishing this ID.</div>`;
+      if(!evs.length) h+=`<div class="empty">No live event on this segment right now. Any producer can attach a record by publishing this ID.</div>`;
       panel.innerHTML=h; copyBtn(id);
     }
     function openEventCard(eid){
       const e=evById[eid]; if(!e) return;
-      let h=`<h2>511 event <span class="badge ${STN[e.state][1]}">${STN[e.state][0]}</span><span class="badge wz">${esc(e.style||'event')}</span></h2>`;
+      let h=`<h2>511 event <span class="badge ${STN[e.state][1]}">${STN[e.state][0]}</span>${e.matches.length?'':'<span class="badge alert">unmatched</span>'}${isLive?'<span class="badge lv">live</span>':''}</h2>`;
       h+=evRec(e);
-      h+=`<div class="rec prov"><h3>GERS references (${e.matches.length}) <span class="src">the join, made concrete</span></h3>`;
-      for(const mt of e.matches.slice(0,12))
-        h+=`<div class="obs"><button class="seglink" data-gid="${esc(mt.gers_id)}">${esc(mt.gers_id)}</button><span class="conf">${mt.snap_m!=null?mt.snap_m+' m':Math.round(mt.overlap_m)+' m ovl'}</span><span></span></div>`;
-      if(e.matches.length>12) h+=`<p style="font-size:12px;color:var(--muted);margin:.4em 0 0">+ ${e.matches.length-12} more segments</p>`;
-      h+=`</div>`;
+      if(e.matches.length){
+        h+=`<div class="rec prov"><h3>GERS references (${e.matches.length}) <span class="src">the join, made concrete</span></h3>`;
+        for(const mt of e.matches.slice(0,12))
+          h+=`<div class="obs"><button class="seglink" data-gid="${esc(mt.gers_id)}">${esc(mt.gers_id)}</button><span class="conf">${mt.snap_m!=null?mt.snap_m+' m':Math.round(mt.overlap_m)+' m ovl'}</span><span></span></div>`;
+        h+=`</div>`;
+      } else {
+        h+=`<div class="rec alert"><h3>Outside the detailed match region</h3><dl class="kv"><dt>Why</dt><dd>Detailed Overture segments are loaded for the four-state corridor region; this event sits beyond them. Expanding the match region is one data pull — this ring is the adoption map.</dd></dl></div>`;
+      }
       panel.innerHTML=h;
-      panel.querySelectorAll('.seglink').forEach(b=>b.addEventListener('click',()=>openSegCardI80(b.dataset.gid)));
+      panel.querySelectorAll('.seglink').forEach(b=>b.addEventListener('click',()=>openSegCard(b.dataset.gid)));
     }
-    // default card: an I-70 Missouri event (the KC–StL freight spine), else first event
-    const first=ev.events.find(e=>e.state==='MO'&&e.route==='I-70')||ev.events[0];
+    function openSensorCard(p){
+      panel.innerHTML=`<h2>Traffic sensor <span class="badge lv">live</span></h2>
+        <div class="rec auth"><h3>RWIS roadway sensor <span class="src">Iowa DOT · live</span></h3>
+        <dl class="kv"><dt>Site</dt><dd>${esc(p.RPUID_NAME||p.SENSOR_NAME||'')}</dd>
+        <dt>Route</dt><dd>${esc(p.ROUTE_NAME||'—')} · MP ${esc(p.MILE_POST??'—')}</dd>
+        <dt>County</dt><dd>${esc(p.COUNTY_NAME||'—')}</dd>
+        <dt>Occupancy</dt><dd><b>${esc(p.OCCUPANCY??'—')}%</b> (lane occupancy — the live congestion signal)</dd>
+        <dt>Normal volume</dt><dd>${esc(p.NORMAL_VOLUME??'—')}</dd>
+        <dt>Updated</dt><dd>${esc(p.DATA_LAST_UPDATED||'—')}</dd></dl></div>
+        <div class="empty">Next step in the pilot: these readings published per GERS segment, not per site.</div>`;
+    }
+    function openCamCard(p){
+      panel.innerHTML=`<h2>DOT camera <span class="badge lv">live</span></h2>
+        <div class="rec cam"><h3>${esc(p.Route||'Camera')} <span class="src">${esc(p.ORG||'')} · live snapshot</span></h3>
+        <dl class="kv"><dt>Location</dt><dd>${esc(p.Desc_||p.ImageName||'')}</dd></dl>
+        ${p.ImageURL?`<img src="${esc(p.ImageURL)}" alt="Live DOT camera snapshot: ${esc(p.Desc_||'')}" loading="lazy">`:''}
+        </div>`;
+    }
+    window._openSeg=openSegCard;
+    const first=matched.find(e=>e.state==='MO'&&e.route==='I-70')||matched[0];
     if(first) openEventCard(first.eid);
   }
 
-  /* ---------------- Fresno concept corridor ---------------- */
+  /* ---------- Fresno concept (unchanged behavior) ---------- */
   async function loadFresno(){
     if(!cache.fresno){
       const [segs, feeds] = await Promise.all([
@@ -297,6 +467,7 @@ a{color:var(--accent)}
       ['av', feeds.av_observations.length, 'AV observations'],
       ['alert', novel, 'Not in state feed']
     ]);
+    document.getElementById('srcnote').innerHTML=NOTES.fresno;
     const m=freshMap([[-119.93,36.60],[-119.58,36.92]]);
     m.on('load',()=>{
       m.addSource('segs',{type:'geojson',data:segs,promoteId:'gers_id'});
@@ -312,7 +483,12 @@ a{color:var(--accent)}
         paint:{'circle-radius':5,'circle-color':['case',['get','novel'],css('--alert'),css('--av')],
                'circle-stroke-width':1.5,'circle-stroke-color':css('--surface')}});
       hint.textContent='Scroll to zoom · drag to pan · click a segment';
-      wireHover(m);
+      let hovered=null;
+      m.on('mousemove','seg-base',e=>{ m.getCanvas().style.cursor='pointer';
+        if(hovered!==null) m.setFeatureState({source:'segs',id:hovered},{hover:false});
+        hovered=e.features[0].id; m.setFeatureState({source:'segs',id:hovered},{hover:true}); });
+      m.on('mouseleave','seg-base',()=>{ m.getCanvas().style.cursor='';
+        if(hovered!==null) m.setFeatureState({source:'segs',id:hovered},{hover:false}); hovered=null; });
       const pick=e=>{const f=e.features[0]; if(f) openSegCardFresno(f.properties.gers_id);};
       m.on('click','seg-base',pick); m.on('click','av-pts',pick);
     });
@@ -324,14 +500,12 @@ a{color:var(--accent)}
       let h=`<h2>GERS entity ${wzs.length?'<span class="badge wz">work zone</span>':''}${obs.some(o=>o.not_in_state_feed)?'<span class="badge alert">unreported</span>':(obs.length?'<span class="badge av">AV-confirmed</span>':'')}</h2>
         <div class="gid"><span>${esc(id)}</span><button id="cpy">Copy</button></div>
         <div class="rec"><h3>Base segment <span class="src">Overture 2026-11-18.0</span></h3>
-          <dl class="kv"><dt>Name</dt><dd>${esc(p.name||'(unnamed ramp / link)')}</dd>
-          <dt>Class</dt><dd>${esc(p.class)}</dd>
+          <dl class="kv"><dt>Name</dt><dd>${esc(p.name||'(unnamed ramp / link)')}</dd><dt>Class</dt><dd>${esc(p.class)}</dd>
           ${route?`<dt>Route</dt><dd>${esc(route)}</dd>`:''}</dl></div>`;
       for(const wz of wzs){ const w=wz.properties;
         h+=`<div class="rec wz"><h3>Work zone <span class="src">WZDx-shaped sample</span></h3>
           <dl class="kv"><dt>Event</dt><dd>${esc(w.core_details.description)}</dd>
-          <dt>Feed ID</dt><dd>${esc(wz.id)}</dd>
-          <dt>Direction</dt><dd>${esc(w.core_details.direction)}</dd>
+          <dt>Feed ID</dt><dd>${esc(wz.id)}</dd><dt>Direction</dt><dd>${esc(w.core_details.direction)}</dd>
           <dt>Impact</dt><dd>${esc(w.vehicle_impact)}</dd>
           <dt>Speed</dt><dd>${Math.round(w.reduced_speed_limit_kph/1.609)} mph (reduced)</dd>
           <dt>Window</dt><dd>${dt(w.start_date)} → ${dt(w.end_date)}</dd>
@@ -353,29 +527,13 @@ a{color:var(--accent)}
     if(first) openSegCardFresno(first);
   }
 
-  function wireHover(m){
-    let hovered=null;
-    m.on('mousemove','seg-base',e=>{
-      m.getCanvas().style.cursor='pointer';
-      if(hovered!==null) m.setFeatureState({source:'segs',id:hovered},{hover:false});
-      hovered=e.features[0].id;
-      m.setFeatureState({source:'segs',id:hovered},{hover:true});
-    });
-    m.on('mouseleave','seg-base',()=>{
-      m.getCanvas().style.cursor='';
-      if(hovered!==null) m.setFeatureState({source:'segs',id:hovered},{hover:false});
-      hovered=null;
-    });
-  }
-
   async function show(which){
     if(cur===which) return; cur=which;
     for(const t of ['i80','fresno']) document.getElementById('tab-'+t).setAttribute('aria-selected', String(t===which));
-    document.getElementById('legend').innerHTML=LEGENDS[which];
-    document.getElementById('srcnote').innerHTML=NOTES[which];
+    document.getElementById('legend').innerHTML=LEGENDS[which==='i80'?'live':'fresno'];
     panel.innerHTML='<div class="empty">Loading…</div>';
-    hint.textContent='Loading corridor…';
-    try{ await (which==='i80'?loadI80():loadFresno()); }
+    hint.textContent='Loading…';
+    try{ await (which==='i80'?loadLive():loadFresno()); }
     catch(e){ hint.textContent='Data failed to load — try reloading the page.'; }
   }
   document.getElementById('tab-i80').addEventListener('click',()=>{location.hash='i80';});
@@ -385,6 +543,5 @@ a{color:var(--accent)}
   route();
 })();
 </script>
-
 </body>
 </html>
