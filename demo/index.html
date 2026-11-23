@@ -249,105 +249,147 @@ a{color:var(--accent)}
   }
 
   /* ---------- live loader ---------- */
+  const DETAIL_BASE='data/detail/';
+  const FALLBACK_STATES=['IA','NE','MN','MO','GA','UT','NM'];
+  const SCOLORS={IA:'--ia',NE:'--ne',MN:'--mn',MO:'--mo',GA:'--ga',UT:'--ut',NM:'--nm',KY:'--ky'};
+  const stateColor=st=>SCOLORS[st]?css(SCOLORS[st]):`hsl(${((st.charCodeAt(0)*73+(st.charCodeAt(1)||7)*31)%360)} 62% 52%)`;
   async function loadLive(){
     if(!cache.base){
-      hint.textContent='Loading the national network (~4 MB)…';
-      const [nat, states, segs, snap] = await Promise.all([
+      hint.textContent='Loading the national network…';
+      const [nat, states, snap] = await Promise.all([
         fetch('data/national_interstates.geojson').then(r=>r.json()),
         fetch('data/us_states.json').then(r=>r.json()),
-        fetch('data/detail_segments.geojson').then(r=>r.json()),
         fetch('data/corridor_events.json').then(r=>r.json())
       ]);
-      cache.base={nat,states,segs,snap,idx:buildIndex(segs)};
+      cache.base={nat,states,snap};
     }
-    const {nat,states,segs,snap,idx}=cache.base;
+    const {nat,states,snap}=cache.base;
 
-    // try live feeds (browser-direct); fall back to snapshot
-    let events=null, sensors=[], cams=[], liveAt=null;
     if(!cache.liveTried){
-      hint.textContent='Fetching live feeds from four state DOTs…';
+      hint.textContent='Fetching live feeds from every publishing state…';
       const cars=p=>({route:p.Route,headline:p.headline,cause:p.cause,link:p.linktxt,lrs:p.ROUTE_ID,direction:p.direction||p.short_direction,updated:p.UpdateDate});
+      const wz=p=>{const cd=p.core_details||p;let rn=cd.road_names;if(Array.isArray(rn))rn=rn.join(', ');else if(typeof rn==='string')rn=rn.replace(/[\[\]']/g,'');return {route:rn,headline:(cd.description||cd.event_type||'Road event').slice(0,160),direction:cd.direction,updated:cd.update_date||p.start_date,wzdx:true};};
       const defs=[
-        {svc:'CARS511_Iowa_View',state:'IA',kind:'point',m:cars},
-        {svc:'CARS511_NE_Events_View',state:'NE',kind:'point',m:cars},
-        {svc:'CARS511_MN_Events_View',state:'MN',kind:'point',m:cars},
-        {svc:'511_MO_View',state:'MO',kind:'point',m:p=>({headline:p.HEADLINE,txt:(p.HEADLINE||'')+' '+(p.MESSAGE||''),updated:p.EditDate})},
-        {svc:'511_IA_Event_Lines_View',state:'IA',kind:'line',m:cars},
-        {svc:'511_MO_View',layer:1,state:'MO',kind:'line',m:p=>({headline:'Reported closure ('+(p.STYLE||'event')+')',updated:p.EditDate})},
-        {url:'https://services7.arcgis.com/IwWven8ZOCbBYiP5/arcgis/rest/services/WZDx_view/FeatureServer/0',state:'IA',kind:'line',m:p=>({route:p.road_names,headline:'Work zone: '+(p.types_of_work||'roadwork')+' — '+(p.vehicle_impact||''),cause:(p.description||'').slice(0,180),direction:p.direction,updated:p.start_date,wzdx:true})},
-        {url:'https://services1.arcgis.com/2iUE8l8JKrP2tygQ/arcgis/rest/services/GDOT_511_Events_Public_View/FeatureServer/0',state:'GA',kind:'point',m:p=>({route:p.RoadwayName,headline:(p.Description||'').slice(0,160),direction:p.DirectionOfTravel,updated:p.LastUpdated})},
-        {url:'https://services6.arcgis.com/KaHXE9OkiB9e63uE/arcgis/rest/services/UDOT_Events/FeatureServer/0',state:'UT',kind:'point',m:p=>({route:(p.Name&&p.Name!=='None')?p.Name:p.Location,headline:(p.EventCategory||'Event')+((p.Location&&p.Location!=='None')?' — '+p.Location:''),cause:(p.Description||'').slice(0,180),direction:p.DirectionOfTravel,updated:p.LastUpdated*1000})},
-        {url:'https://services1.arcgis.com/fXHQyq63u0UsTeSM/arcgis/rest/services/NMRoads_Events_Public/FeatureServer/0',state:'NM',kind:'point',m:p=>({route:p.road_names,headline:(p.name&&p.name!==p.event_type?p.name:p.event_type)||'Event',cause:(p.description||'').slice(0,180),direction:p.direction,updated:p.update_date,wzdx:true})},
-        {url:'https://services1.arcgis.com/fXHQyq63u0UsTeSM/arcgis/rest/services/NMRoads_Events_Public/FeatureServer/1',state:'NM',kind:'line',m:p=>({route:p.road_names,headline:(p.name&&p.name!==p.event_type?p.name:p.event_type)||'Event',cause:(p.description||'').slice(0,180),direction:p.direction,updated:p.update_date,wzdx:true})},
-        {geojson:'https://storage.googleapis.com/kytc-its-2020-openrecords/public/feeds/WZDx/kytc_wzdx_v4.1.geojson',state:'KY',kind:'line',m:p=>{const cd=p.core_details||p;let rn=cd.road_names;if(Array.isArray(rn))rn=rn.join(', ');else if(typeof rn==='string')rn=rn.replace(/[\[\]']/g,'');return {route:rn,headline:'Work zone: '+(cd.description||'').slice(0,140),direction:cd.direction,updated:cd.update_date||p.start_date,wzdx:true};}},
+        {svc:'CARS511_Iowa_View',state:'IA',m:cars},
+        {svc:'CARS511_NE_Events_View',state:'NE',m:cars},
+        {svc:'CARS511_MN_Events_View',state:'MN',m:cars},
+        {svc:'511_MO_View',state:'MO',m:p=>({headline:p.HEADLINE,txt:(p.HEADLINE||'')+' '+(p.MESSAGE||''),updated:p.EditDate})},
+        {svc:'511_IA_Event_Lines_View',state:'IA',merc:true,m:cars},
+        {svc:'511_MO_View',layer:1,state:'MO',m:p=>({headline:'Reported closure ('+(p.STYLE||'event')+')',updated:p.EditDate})},
+        {url:'https://services7.arcgis.com/IwWven8ZOCbBYiP5/arcgis/rest/services/WZDx_view/FeatureServer/0',state:'IA',m:p=>({route:p.road_names,headline:'Work zone: '+(p.types_of_work||'roadwork')+' — '+(p.vehicle_impact||''),cause:(p.description||'').slice(0,180),direction:p.direction,updated:p.start_date,wzdx:true})},
+        {url:'https://services1.arcgis.com/2iUE8l8JKrP2tygQ/arcgis/rest/services/GDOT_511_Events_Public_View/FeatureServer/0',state:'GA',m:p=>({route:p.RoadwayName,headline:(p.Description||'').slice(0,160),direction:p.DirectionOfTravel,updated:p.LastUpdated})},
+        {url:'https://services6.arcgis.com/KaHXE9OkiB9e63uE/arcgis/rest/services/UDOT_Events/FeatureServer/0',state:'UT',m:p=>({route:(p.Name&&p.Name!=='None')?p.Name:p.Location,headline:(p.EventCategory||'Event')+((p.Location&&p.Location!=='None')?' — '+p.Location:''),cause:(p.Description||'').slice(0,180),direction:p.DirectionOfTravel,updated:p.LastUpdated*1000})},
+        {url:'https://services1.arcgis.com/fXHQyq63u0UsTeSM/arcgis/rest/services/NMRoads_Events_Public/FeatureServer/0',state:'NM',m:wz},
+        {url:'https://services1.arcgis.com/fXHQyq63u0UsTeSM/arcgis/rest/services/NMRoads_Events_Public/FeatureServer/1',state:'NM',m:wz},
+        {geojson:'https://storage.googleapis.com/kytc-its-2020-openrecords/public/feeds/WZDx/kytc_wzdx_v4.1.geojson',state:'KY',m:wz},
+        // USDOT Work Zone Data Feed Registry — open-URL feeds, tried browser-direct; failures no-op
+        {geojson:'https://wzdxapi.aztech.org/construction',state:'AZ',m:wz},
+        {geojson:'https://511wi.gov/api/wzdx',state:'WI',m:wz},
+        {geojson:'https://traveler.modot.org/timconfig/feed/desktop/mo_wzdx.json',state:'MO',m:wz},
+        {geojson:'https://ai.blyncsy.io/wzdx/hidot/feed',state:'HI',m:wz},
+        {geojson:'https://511ny.org/api/wzdx',state:'NY',m:wz},
+        {geojson:'https://wzdx.wsdot.wa.gov/api/v4/WorkZoneFeed',state:'WA',m:wz},
+        {geojson:'https://ks.carsprogram.org/carsapi_v1/api/wzdx',state:'KS',m:wz},
+        {geojson:'https://in.carsprogram.org/carsapi_v1/api/wzdx',state:'IN',m:wz},
+        {geojson:'https://wzdx.e-dot.com/del_dot_feed_wzdx_v4.1.geojson',state:'DE',m:wz},
+        {geojson:'https://wzdx.e-dot.com/la_dot_d_feed_wzdx_v4.1.geojson',state:'LA',m:wz},
+        {geojson:'https://511.idaho.gov/api/wzdx',state:'ID',m:wz},
+        {geojson:'https://api.mdottraffic.com/prod/v3/data/wzdx',state:'MS',m:wz},
+        {geojson:'https://travelfiles.dot.nd.gov/geojson_nc/wzdx_geojson.json',state:'ND',m:wz},
+        {geojson:'https://sd.cdn.iteris-atis.com/wzdx/sd_wzdx_v1.geojson',state:'SD',m:wz},
+        {geojson:'https://filter.ritis.org/wzdx_v4.1/mdot.geojson',state:'MD',m:wz},
+        {geojson:'https://smartworkzones.njit.edu/nj/wzdx',state:'NJ',m:wz},
+        {geojson:'https://api.dx.ne-compass.com/wzdx-latest/',state:'NEC',label:'NH·VT·ME (NE Compass)',detail:['NH','VT','ME'],m:wz},
       ];
       const layerUrl=d=>d.url||`${AGOL}/${d.svc}/FeatureServer/${d.layer||0}`;
-      const plain=async u=>{const ctl=new AbortController();const t=setTimeout(()=>ctl.abort(),15000);const r=await fetch(u,{signal:ctl.signal});clearTimeout(t);if(!r.ok)throw new Error('feed http '+r.status);return (await r.json()).features||[];};
+      const plain=async u=>{const ctl=new AbortController();const t=setTimeout(()=>ctl.abort(),15000);const r=await fetch(u,{signal:ctl.signal});clearTimeout(t);if(!r.ok)throw new Error('feed http '+r.status);const d=await r.json();return d.features||d.road_events||[];};
       const results=await Promise.allSettled([
         ...defs.map(d=>d.geojson?plain(d.geojson):agol(layerUrl(d))),
         agol(`${AGOL}/RWIS_Traffic_Data_View/FeatureServer/0`),
         agol(`${AGOL}/Traffic_Cameras_View/FeatureServer/0`)
       ]);
+      // raw per-feed events (no matching yet)
+      let rawEvents=null, liveAt=null;
       const evResults=results.slice(0,defs.length);
-      if(evResults.some(r=>r.status==='fulfilled')){
-        const seen=new Set(); events=[];
+      if(evResults.some(r=>r.status==='fulfilled'&&r.value.length)){
+        const seen=new Set(); rawEvents=[];
         evResults.forEach((r,i)=>{
           if(r.status!=='fulfilled') return;
           const d=defs[i];
           for(const f of r.value){
-            let g=f.geometry; if(!g||!g.coordinates) continue;
-            if(d.kind==='line') g=fixMerc(g);
+            let g=f.geometry; if(!g||!g.coordinates||!g.coordinates.length) continue;
+            if(g.type!=='Point') g=fixMerc(g);
             const p=f.properties||{};
             const v=d.m(p);
-            const eid=d.state+i+'-'+String(p.ID||p.id||p.event_id||p.OBJECTID||p.ObjectId||p.FID);
+            const eid=d.state+i+'-'+String(p.ID||p.id||p.event_id||p.OBJECTID||p.ObjectId||p.FID||Math.random().toString(36).slice(2,8));
             if(seen.has(eid)) continue; seen.add(eid);
-            const routeTxt=(v.route||'')+' '+(v.txt||v.headline||'');
-            const evRef=refOf(routeTxt);
-            const probes = d.kind==='line'
-              ? (()=>{let c=g.coordinates; if(Array.isArray(c[0][0])) c=c[0]; return [c[0],c[(c.length/2)|0],c[c.length-1]];})()
-              : [g.coordinates];
-            const matches=[]; const mseen=new Set();
-            for(const [lon,lat] of probes){
-              const m=matchPoint(idx,lon,lat,evRef,d.kind==='line'?60:250);
-              if(m && !mseen.has(m.it.f.properties.gers_id)){
-                mseen.add(m.it.f.properties.gers_id);
-                matches.push({gers_id:m.it.f.properties.gers_id,snap_m:Math.round(m.d*10)/10,route_agree:m.agree,method:'nearest-segment (browser)'});
-              }
-            }
-            const pt = d.kind==='line' ? probes[1] : g.coordinates;
-            events.push({eid,state:d.state,kind:d.kind,route:v.route||null,iref:evRef,style:p.STYLE,
-              headline:v.headline||null,phrase:v.phrase||null,cause:(v.cause||'').trim()||null,link:v.link||null,
-              route_id_lrs:v.lrs||null,direction:v.direction||null,wzdx:!!v.wzdx,
-              updated:v.updated!=null?String(v.updated):null, matches, geometry:{type:'Point',coordinates:pt}});
+            rawEvents.push({eid,def:d,g,v,iref:refOf((v.route||'')+' '+(v.txt||v.headline||''))});
           }
         });
         liveAt=new Date();
       }
+      let sensors=[],cams=[];
       if(results[defs.length].status==='fulfilled') sensors=results[defs.length].value.filter(f=>f.geometry);
       if(results[defs.length+1].status==='fulfilled') cams=results[defs.length+1].value.filter(f=>f.geometry&&f.properties&&/^I-/.test(f.properties.Route||''));
-      cache.liveTried={events,sensors,cams,liveAt};
-    }else{
-      ({events,sensors,cams,liveAt}=cache.liveTried);
+      // lazy detail: only states whose feeds answered
+      const liveStates=new Set();
+      if(rawEvents) for(const e of rawEvents) (e.def.detail||[e.def.state]).forEach(s=>liveStates.add(s));
+      const wanted=rawEvents?[...liveStates]:FALLBACK_STATES;
+      hint.textContent=`Loading GERS segments for ${wanted.length} state${wanted.length>1?'s':''}…`;
+      const detRes=await Promise.allSettled(wanted.map(s=>fetch(DETAIL_BASE+s+'.geojson').then(r=>r.json())));
+      const segFeats=[];
+      detRes.forEach(r=>{ if(r.status==='fulfilled') segFeats.push(...r.value.features); });
+      const segs={type:'FeatureCollection',features:segFeats};
+      const idx=buildIndex(segs);
+      // match
+      let events=null;
+      if(rawEvents){
+        events=rawEvents.map(e=>{
+          const probes = e.g.type==='Point' ? [e.g.coordinates]
+            : (()=>{let c=e.g.coordinates; if(Array.isArray(c[0][0])) c=c[0]; return [c[0],c[(c.length/2)|0],c[c.length-1]];})();
+          const matches=[]; const ms=new Set();
+          for(const pt of probes){
+            if(!Array.isArray(pt)||typeof pt[0]!=='number') continue;
+            const m=matchPoint(idx,pt[0],pt[1],e.iref,e.g.type==='Point'?250:60);
+            if(m && !ms.has(m.it.f.properties.gers_id)){
+              ms.add(m.it.f.properties.gers_id);
+              matches.push({gers_id:m.it.f.properties.gers_id,snap_m:Math.round(m.d*10)/10,route_agree:m.agree,method:'nearest-segment (browser)'});
+            }
+          }
+          const pt=e.g.type==='Point'?e.g.coordinates:probes[1]||probes[0];
+          return {eid:e.eid,state:e.def.state,label:e.def.label,kind:e.g.type==='Point'?'point':'line',
+            route:e.v.route||null,iref:e.iref,headline:e.v.headline||null,phrase:e.v.phrase||null,
+            cause:(e.v.cause||'').trim()||null,link:e.v.link||null,route_id_lrs:e.v.lrs||null,
+            direction:e.v.direction||null,wzdx:!!e.v.wzdx,updated:e.v.updated!=null?String(e.v.updated):null,
+            matches,geometry:{type:'Point',coordinates:pt}};
+        });
+      }
+      cache.liveTried={events,sensors,cams,liveAt,segs,idx:null};
     }
-    const isLive=!!events;
-    if(!isLive) events=snap.events.map(e=>({...e, geometry: e.kind==='point'?e.geometry:{type:'Point',coordinates:mid(e.geometry)}}));
+    const {events:liveEv,sensors,cams,liveAt,segs}=cache.liveTried;
+    const isLive=!!liveEv;
+    const events=isLive?liveEv:snap.events.map(e=>({...e, geometry: e.kind==='point'?e.geometry:{type:'Point',coordinates:mid(e.geometry)}}));
 
     const evById={}, evBySeg={};
     for(const e of events){ evById[e.eid]=e; for(const m of e.matches) (evBySeg[m.gers_id]??=[]).push(e); }
     for(const f of segs.features) f.properties.hasEvent=!!evBySeg[f.properties.gers_id];
-    const matched=events.filter(e=>e.matches.length), unmatched=events.filter(e=>!e.matches.length);
+    const matched=events.filter(e=>e.matches.length);
     const snaps=matched.flatMap(e=>e.matches.map(m=>m.snap_m)).sort((a,b)=>a-b);
     const bs={}; for(const e of events) bs[e.state]=(bs[e.state]||0)+1;
+    const liveStateCount=Object.values(bs).filter(v=>v>0).length;
 
     setStats([
-      ['', nat.features.reduce((n,f)=>n+f.geometry.coordinates.length,0).toLocaleString()+' / 225', 'US interstate parts / routes'],
+      ['', '77,220 / 225', 'US interstate parts / routes'],
       ['wz', events.length, isLive?'Live events now':'Snapshot events'],
-      ['', String(Object.values(bs).filter(v=>v>0).length), isLive?'States live now':'States in snapshot'],
+      ['', String(liveStateCount), isLive?'States live now':'States in snapshot'],
       ['ok', matched.length, 'Matched to GERS'],
       ['ok', snaps.length?(snaps[(snaps.length/2)|0]+' m'):'—', 'Median snap'],
       ['', sensors.length+' / '+cams.length, 'Sensors / cameras live']
     ]);
     document.getElementById('srcnote').innerHTML=isLive?NOTES.live:NOTES.snap;
+    const colorExpr=['match',['get','state']];
+    for(const st of Object.keys(bs)){ colorExpr.push(st, stateColor(st)); }
+    colorExpr.push(css('--ia'));
     const m=freshMap([[-125,24.5],[-66.5,49.5]]);
     m.on('load',()=>{
       m.addSource('states',{type:'geojson',data:states});
@@ -371,10 +413,10 @@ a{color:var(--accent)}
       m.addLayer({id:'ev-un',type:'circle',source:'ev',filter:['!',['get','matched']],
         paint:{'circle-radius':4.5,'circle-color':'rgba(0,0,0,0)','circle-stroke-width':2,'circle-stroke-color':css('--alert')}});
       m.addLayer({id:'ev-pts',type:'circle',source:'ev',filter:['get','matched'],
-        paint:{'circle-radius':4.5,'circle-color':['match',['get','state'],'NE',css('--ne'),'MN',css('--mn'),'MO',css('--mo'),'GA',css('--ga'),'UT',css('--ut'),'NM',css('--nm'),'KY',css('--ky'),css('--ia')],
+        paint:{'circle-radius':4.5,'circle-color':colorExpr,
                'circle-stroke-width':1.3,'circle-stroke-color':css('--surface')}});
       hint.innerHTML=isLive
-        ? `<span class="lv">● LIVE</span> — fetched ${liveAt.toISOString().slice(11,16)} UTC, conflated to GERS in your browser · scroll to zoom`
+        ? `<span class="lv">● LIVE</span> — ${liveStateCount} states fetched ${liveAt.toISOString().slice(11,16)} UTC, conflated to GERS in your browser`
         : 'Snapshot of Nov 22, 2026 (live feeds unreachable — reload to retry) · scroll to zoom';
       let hovered=null;
       m.on('mousemove','seg-base',e=>{ map.getCanvas().style.cursor='pointer';
@@ -393,6 +435,8 @@ a{color:var(--accent)}
       }
     });
 
+    const stName=e=>e.label||(STN[e.state]?STN[e.state][0]:e.state+' DOT');
+    const stBadge=e=>STN[e.state]?STN[e.state][1]:'';
     function provRec(mt){
       return `<div class="rec prov"><h3>Match provenance <span class="src">${isLive?'computed in your browser just now':'snapshot of Nov 22'}</span></h3>
         <dl class="kv"><dt>Method</dt><dd>${esc(mt.method||'nearest-segment')}</dd>
@@ -401,12 +445,12 @@ a{color:var(--accent)}
         <dt>Route check</dt><dd>${mt.route_agree?'event route = segment route ✓':'nearest geometry (ramp or unsigned segment)'}</dd></dl></div>`;
     }
     function evRec(e){
-      return `<div class="rec wz"><h3>511 event · ${STN[e.state][0]} <span class="src">state 511 — ${isLive?'live record':'snapshot'}</span></h3>
-        <dl class="kv"><dt>Event</dt><dd>${esc(e.headline||e.phrase||'(no headline)')}${e.wzdx?' <span class="badge wz">WZDx-shaped feed</span>':''}</dd>
+      return `<div class="rec wz"><h3>Road event · ${esc(stName(e))} <span class="src">state feed — ${isLive?'live record':'snapshot'}</span></h3>
+        <dl class="kv"><dt>Event</dt><dd>${esc(e.headline||e.phrase||'(no headline)')}${e.wzdx?' <span class="badge wz">WZDx</span>':''}</dd>
         <dt>ID</dt><dd><code>${esc(e.eid)}</code></dd>
         ${e.route?`<dt>Route</dt><dd>${esc(e.route)}${e.direction?' · '+esc(e.direction):''}</dd>`:''}
         ${e.cause?`<dt>Cause</dt><dd>${esc(e.cause)}</dd>`:''}
-        ${e.route_id_lrs?`<dt>State LRS</dt><dd><code>${esc(e.route_id_lrs)}</code> — Iowa RAMS route ID, unchanged</dd>`:''}
+        ${e.route_id_lrs?`<dt>State LRS</dt><dd><code>${esc(e.route_id_lrs)}</code> — carried through unchanged</dd>`:''}
         ${e.updated?`<dt>Updated</dt><dd>${esc(/^\d{12,13}$/.test(e.updated)?new Date(+e.updated).toISOString().slice(0,16).replace('T',' ')+' UTC':e.updated)}</dd>`:''}
         ${e.link?`<dt>Source</dt><dd><a href="${esc(e.link)}" target="_blank" rel="noopener">${esc(String(e.link).replace('https://',''))}</a></dd>`:''}</dl></div>`;
     }
@@ -424,7 +468,7 @@ a{color:var(--accent)}
     }
     function openEventCard(eid){
       const e=evById[eid]; if(!e) return;
-      let h=`<h2>511 event <span class="badge ${STN[e.state][1]}">${STN[e.state][0]}</span>${e.matches.length?'':'<span class="badge alert">unmatched</span>'}${isLive?'<span class="badge lv">live</span>':''}</h2>`;
+      let h=`<h2>Road event <span class="badge ${stBadge(e)}">${esc(stName(e))}</span>${e.matches.length?'':'<span class="badge alert">unmatched</span>'}${isLive?'<span class="badge lv">live</span>':''}</h2>`;
       h+=evRec(e);
       if(e.matches.length){
         h+=`<div class="rec prov"><h3>GERS references (${e.matches.length}) <span class="src">the join, made concrete</span></h3>`;
@@ -432,7 +476,7 @@ a{color:var(--accent)}
           h+=`<div class="obs"><button class="seglink" data-gid="${esc(mt.gers_id)}">${esc(mt.gers_id)}</button><span class="conf">${mt.snap_m!=null?mt.snap_m+' m':Math.round(mt.overlap_m)+' m ovl'}</span><span></span></div>`;
         h+=`</div>`;
       } else {
-        h+=`<div class="rec alert"><h3>Outside the detailed match region</h3><dl class="kv"><dt>Why</dt><dd>Detailed Overture segments are loaded for the four-state corridor region; this event sits beyond them. Expanding the match region is one data pull — this ring is the adoption map.</dd></dl></div>`;
+        h+=`<div class="rec alert"><h3>Not matched</h3><dl class="kv"><dt>Why</dt><dd>This event sits off the loaded mainline motorway network (local road, or a state whose detail segments failed to load). Expanding coverage is one data pull.</dd></dl></div>`;
       }
       panel.innerHTML=h;
       panel.querySelectorAll('.seglink').forEach(b=>b.addEventListener('click',()=>openSegCard(b.dataset.gid)));
