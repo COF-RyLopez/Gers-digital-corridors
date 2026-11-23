@@ -10,7 +10,7 @@
 :root{
   --bg:#f4f6f8; --surface:#ffffff; --fg:#1a2129; --muted:#5b6672; --line:#d9dfe6;
   --accent:#0b63b8; --wz:#e8720c; --av:#0e8f7e; --alert:#c62f2f;
-  --ia:#7c5cc4; --ne:#2a8a46; --mn:#0e7fa8; --mo:#c2434f; --ga:#8f7700; --ut:#b3593d; --nm:#5f8700;
+  --ia:#7c5cc4; --ne:#2a8a46; --mn:#0e7fa8; --mo:#c2434f; --ga:#8f7700; --ut:#b3593d; --nm:#5f8700; --ky:#3a7ca5;
   --live:#1f9d55; --cam:#8a63d2; --sensor-ok:#2a8a46; --sensor-mid:#e8720c; --sensor-hi:#c62f2f;
   --map-bg:#e8ecef; --map-road:#aab6c2; --map-road-dim:#c6cfd6; --chip:#eef2f5; --stateA:#dfe5ea; --stateB:#e6e3ee;
   --display:'Overpass',system-ui,sans-serif; --body:'Inter',system-ui,sans-serif; --mono:'Overpass Mono',ui-monospace,monospace;
@@ -89,6 +89,7 @@ aside h2{font-family:var(--display);font-size:15px;font-weight:700;margin:0;disp
 .badge.ga{background:color-mix(in srgb,var(--ga) 14%,transparent);color:var(--ga)}
 .badge.ut{background:color-mix(in srgb,var(--ut) 14%,transparent);color:var(--ut)}
 .badge.nm{background:color-mix(in srgb,var(--nm) 14%,transparent);color:var(--nm)}
+.badge.ky{background:color-mix(in srgb,var(--ky) 14%,transparent);color:var(--ky)}
 .badge.lv{background:color-mix(in srgb,var(--live) 16%,transparent);color:var(--live)}
 .seglink{font-family:var(--mono);font-size:11px;color:var(--accent);cursor:pointer;text-decoration:underline;text-underline-offset:2px;background:none;border:0;padding:0;text-align:left;word-break:break-all}
 .how{padding-block:8px 30px;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
@@ -105,9 +106,9 @@ a{color:var(--accent)}
 <header class="wrap">
   <div class="kicker">Overture Maps Foundation community · Digital Corridors concept pilot · <a href="../">strategy brief</a></div>
   <h1>One road segment. One ID. Every dataset.</h1>
-  <p class="sub"><b>Every interstate in the United States</b> on one keyed Overture network — with <b>live 511 events from seven state DOTs</b> (Iowa, Nebraska, Minnesota, Missouri, Georgia, Utah, New Mexico) fetched by your own browser and <b>conflated to GERS IDs on this page, right now</b>, plus live traffic sensors and DOT cameras. Each state keeps its own schema and linear referencing; the GERS ID is only the join key. The dark network is the invitation: every state that publishes a feed can light up. Click any segment, event, sensor, or camera.</p>
+  <p class="sub"><b>Every interstate in the United States</b> on one keyed Overture network — with <b>live 511 events from up to eight state DOTs</b> (Iowa, Nebraska, Minnesota, Missouri, Georgia, Utah, New Mexico, Kentucky) fetched by your own browser and <b>conflated to GERS IDs on this page, right now</b>, plus live traffic sensors and DOT cameras. Each state keeps its own schema and linear referencing; the GERS ID is only the join key. The dark network is the invitation: every state that publishes a feed can light up. Click any segment, event, sensor, or camera.</p>
   <div class="tabs" role="tablist">
-    <button class="tab" role="tab" id="tab-i80" aria-selected="true"><span class="live"></span>National network · live seven-state feeds</button>
+    <button class="tab" role="tab" id="tab-i80" aria-selected="true"><span class="live"></span>National network · live multi-state feeds</button>
     <button class="tab" role="tab" id="tab-fresno">SR-99 · Fresno — AV feedback concept</button>
   </div>
 </header>
@@ -141,7 +142,7 @@ a{color:var(--accent)}
   const hint = document.getElementById('hint'), panel=document.getElementById('panel');
   let map=null, cur=null, cache={};
   const AGOL='https://services.arcgis.com/8lRhdTsQyJpO52F1/arcgis/rest/services';
-  const STN={IA:['Iowa DOT','ia'],NE:['Nebraska DOT','ne'],MN:['Minnesota DOT','mn'],MO:['Missouri DOT','mo'],GA:['Georgia DOT','ga'],UT:['Utah DOT','ut'],NM:['New Mexico DOT','nm']};
+  const STN={IA:['Iowa DOT','ia'],NE:['Nebraska DOT','ne'],MN:['Minnesota DOT','mn'],MO:['Missouri DOT','mo'],GA:['Georgia DOT','ga'],UT:['Utah DOT','ut'],NM:['New Mexico DOT','nm'],KY:['Kentucky TC','ky']};
 
   const NOTES = {
     live: `<b>Live.</b> Events, sensors, and cameras are fetched by your browser directly from Iowa DOT's public ArcGIS services (<code>CARS511_Iowa_View</code>, <code>CARS511_NE_Events_View</code>, <code>CARS511_MN_Events_View</code>, <code>511_MO_View</code>, <code>511_IA_Event_Lines_View</code>, <code>RWIS_Traffic_Data_View</code>, <code>Traffic_Cameras_View</code> — plus Georgia's <code>GDOT_511_Events_Public_View</code>, Utah's <code>UDOT_Events</code>, New Mexico's <code>NMRoads_Events_Public</code>, and Iowa's true-WZDx work-zone layer — live records published by seven state DOTs) and conflated to Overture GERS segment IDs <b>in this page</b> (route-aware nearest-segment; provenance on every join). The national interstate network (all signed US interstates) and detailed match segments are real Overture geometry, release <code>2026-11-18.0</code>. Events far from the detailed seven-state match region show as unmatched rings — the expansion opportunity, visible. Traffic = RWIS roadway sensors (occupancy) and DOT cameras with live snapshots; no statewide speed feed is published openly, so no speed coloring is claimed.`,
@@ -154,7 +155,8 @@ a{color:var(--accent)}
           <div class="r"><span class="sw wz"></span> Segment with live event</div>
           <div class="r"><span class="dot" style="background:var(--ia)"></span> Iowa · <span class="dot" style="background:var(--ne)"></span> Nebraska</div>
           <div class="r"><span class="dot" style="background:var(--mn)"></span> Minnesota · <span class="dot" style="background:var(--mo)"></span> Missouri</div>
-          <div class="r"><span class="dot" style="background:var(--ga)"></span> Georgia · <span class="dot" style="background:var(--ut)"></span> Utah · <span class="dot" style="background:var(--nm)"></span> New Mexico</div>
+          <div class="r"><span class="dot" style="background:var(--ga)"></span> Georgia · <span class="dot" style="background:var(--ut)"></span> Utah</div>
+          <div class="r"><span class="dot" style="background:var(--nm)"></span> New Mexico · <span class="dot" style="background:var(--ky)"></span> Kentucky</div>
           <div class="r"><span class="dot" style="border:2px solid var(--alert);background:transparent"></span> Unmatched (outside detail region)</div>
           <div class="r"><span class="dot" style="background:var(--sensor-mid)"></span> Traffic sensor (occupancy)</div>
           <div class="r"><span class="sq" style="background:var(--cam)"></span> DOT camera (live snapshot)</div>`,
@@ -277,10 +279,12 @@ a{color:var(--accent)}
         {url:'https://services6.arcgis.com/KaHXE9OkiB9e63uE/arcgis/rest/services/UDOT_Events/FeatureServer/0',state:'UT',kind:'point',m:p=>({route:(p.Name&&p.Name!=='None')?p.Name:p.Location,headline:(p.EventCategory||'Event')+((p.Location&&p.Location!=='None')?' — '+p.Location:''),cause:(p.Description||'').slice(0,180),direction:p.DirectionOfTravel,updated:p.LastUpdated*1000})},
         {url:'https://services1.arcgis.com/fXHQyq63u0UsTeSM/arcgis/rest/services/NMRoads_Events_Public/FeatureServer/0',state:'NM',kind:'point',m:p=>({route:p.road_names,headline:(p.name&&p.name!==p.event_type?p.name:p.event_type)||'Event',cause:(p.description||'').slice(0,180),direction:p.direction,updated:p.update_date,wzdx:true})},
         {url:'https://services1.arcgis.com/fXHQyq63u0UsTeSM/arcgis/rest/services/NMRoads_Events_Public/FeatureServer/1',state:'NM',kind:'line',m:p=>({route:p.road_names,headline:(p.name&&p.name!==p.event_type?p.name:p.event_type)||'Event',cause:(p.description||'').slice(0,180),direction:p.direction,updated:p.update_date,wzdx:true})},
+        {geojson:'https://storage.googleapis.com/kytc-its-2020-openrecords/public/feeds/WZDx/kytc_wzdx_v4.1.geojson',state:'KY',kind:'line',m:p=>{const cd=p.core_details||p;let rn=cd.road_names;if(Array.isArray(rn))rn=rn.join(', ');else if(typeof rn==='string')rn=rn.replace(/[\[\]']/g,'');return {route:rn,headline:'Work zone: '+(cd.description||'').slice(0,140),direction:cd.direction,updated:cd.update_date||p.start_date,wzdx:true};}},
       ];
       const layerUrl=d=>d.url||`${AGOL}/${d.svc}/FeatureServer/${d.layer||0}`;
+      const plain=async u=>{const ctl=new AbortController();const t=setTimeout(()=>ctl.abort(),15000);const r=await fetch(u,{signal:ctl.signal});clearTimeout(t);if(!r.ok)throw new Error('feed http '+r.status);return (await r.json()).features||[];};
       const results=await Promise.allSettled([
-        ...defs.map(d=>agol(layerUrl(d))),
+        ...defs.map(d=>d.geojson?plain(d.geojson):agol(layerUrl(d))),
         agol(`${AGOL}/RWIS_Traffic_Data_View/FeatureServer/0`),
         agol(`${AGOL}/Traffic_Cameras_View/FeatureServer/0`)
       ]);
@@ -367,7 +371,7 @@ a{color:var(--accent)}
       m.addLayer({id:'ev-un',type:'circle',source:'ev',filter:['!',['get','matched']],
         paint:{'circle-radius':4.5,'circle-color':'rgba(0,0,0,0)','circle-stroke-width':2,'circle-stroke-color':css('--alert')}});
       m.addLayer({id:'ev-pts',type:'circle',source:'ev',filter:['get','matched'],
-        paint:{'circle-radius':4.5,'circle-color':['match',['get','state'],'NE',css('--ne'),'MN',css('--mn'),'MO',css('--mo'),'GA',css('--ga'),'UT',css('--ut'),'NM',css('--nm'),css('--ia')],
+        paint:{'circle-radius':4.5,'circle-color':['match',['get','state'],'NE',css('--ne'),'MN',css('--mn'),'MO',css('--mo'),'GA',css('--ga'),'UT',css('--ut'),'NM',css('--nm'),'KY',css('--ky'),css('--ia')],
                'circle-stroke-width':1.3,'circle-stroke-color':css('--surface')}});
       hint.innerHTML=isLive
         ? `<span class="lv">● LIVE</span> — fetched ${liveAt.toISOString().slice(11,16)} UTC, conflated to GERS in your browser · scroll to zoom`

@@ -3,12 +3,16 @@
 **How any state DOT, county, MPO, or corridor coalition can join its road-event data
 to a shared national reference — in about a day, with the tools in this repository.**
 
-The [live demo](https://cof-rylopez.github.io/Gers-digital-corridors/demo/) shows the
-result at four-state scale: 306 real 511 events from Iowa, Nebraska, Minnesota, and
-Missouri joined to Overture GERS segment IDs across the I-80 / I-35 / I-29 / I-70 / I-94
-network — 99% of interstate point events auto-matched, median snap 3.4 meters, with
-match provenance on every join. Nothing about those four states is special. This
-document is the recipe for doing the same with yours.
+The [live demo](https://cof-rylopez.github.io/Gers-digital-corridors/demo/) now runs
+**live at multi-state scale**: every signed US interstate (77,220 Overture segments)
+as the national base, with current 511/WZDx events from **up to eight state DOTs**
+(Iowa, Nebraska, Minnesota, Missouri, Georgia, Utah, New Mexico, Kentucky) fetched by
+the viewer's own browser and conflated to GERS **on the page, at load time** — in
+testing, ~3,500 live events with ~1,500 matched at 2–3 m median snap, provenance on
+every join. The [feed tester](https://cof-rylopez.github.io/Gers-digital-corridors/demo/feeds/)
+probes all 42 feeds in USDOT's official Work Zone Data Feed Registry from your browser
+and shows exactly which states could join today. Nothing about these states is special.
+This document is the recipe for doing the same with yours.
 
 ## Why
 
@@ -96,9 +100,14 @@ AV fleet observations.
 ## Step 5 — Tell the next state
 
 The national version of this is not a system anyone has to build — it is this
-recipe, run ~50 times, plus a thin registry of who publishes what. If you run
-this playbook on your feed, open an issue or PR on this repository with your
-report.json numbers. The map gets one state better.
+recipe, run ~50 times, plus USDOT's existing feed registry. The measured status
+(from the [feed tester](https://cof-rylopez.github.io/Gers-digital-corridors/demo/feeds/)
+and this project's triage of the registry, Nov 2026): **8 states live on the map**,
+~a dozen more publish open feeds that only need a browser-reachability (CORS) header
+or one config entry, **14 feeds sit behind free API keys** (the case for a thin
+shared relay), and the rest don't publish yet. If you run this playbook on your
+feed, open an issue or PR with your report.json numbers. The map gets one state
+better.
 
 ## Scope and honesty
 

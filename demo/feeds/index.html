@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>National WZDx Feed Tester</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Overpass:wght@400;600;700;800&family=Overpass+Mono:wght@400;600&family=Inter:wght@400;500;600&display=swap">
+<style>
+:root{--bg:#f4f6f8;--surface:#ffffff;--fg:#1a2129;--muted:#5b6672;--line:#d9dfe6;--accent:#0b63b8;--ok:#1f9d55;--warn:#e8720c;--bad:#c62f2f;--chip:#eef2f5;
+--display:'Overpass',system-ui,sans-serif;--body:'Inter',system-ui,sans-serif;--mono:'Overpass Mono',ui-monospace,monospace}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#14181d;--surface:#1c2228;--fg:#e8edf2;--muted:#93a0ad;--line:#2d353e;--accent:#5aa4e0;--ok:#3dc97a;--warn:#f08a2e;--bad:#e05555;--chip:#242c34;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#14181d;--surface:#1c2228;--fg:#e8edf2;--muted:#93a0ad;--line:#2d353e;--accent:#5aa4e0;--ok:#3dc97a;--warn:#f08a2e;--bad:#e05555;--chip:#242c34;color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);margin:0;font-size:14.5px;line-height:1.5}
+.wrap{max-width:1100px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{padding-block:26px 12px}
+.kicker{font-family:var(--display);font-weight:600;letter-spacing:.12em;text-transform:uppercase;font-size:11px;color:var(--muted)}
+.kicker a{color:var(--accent)}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(22px,4vw,30px);margin:.2em 0}
+p.sub{color:var(--muted);max-width:80ch;margin:0 0 8px}
+.tiles{display:flex;flex-wrap:wrap;gap:10px;padding-block:14px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:9px 16px;min-width:120px}
+.tile .n{font-family:var(--display);font-weight:800;font-size:24px;font-variant-numeric:tabular-nums}
+.tile .l{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.tile.ok .n{color:var(--ok)}.tile.warn .n{color:var(--warn)}.tile.bad .n{color:var(--bad)}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface);margin-bottom:18px}
+table{border-collapse:collapse;width:100%;font-size:13px;min-width:760px}
+th{font-family:var(--display);font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);text-align:left}
+th,td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+tbody tr:last-child td{border-bottom:0}
+.st{font-weight:600;text-transform:capitalize;white-space:nowrap}
+.pill{font:600 11px var(--body);border-radius:99px;padding:2px 10px;white-space:nowrap;display:inline-block}
+.pill.ok{background:color-mix(in srgb,var(--ok) 15%,transparent);color:var(--ok)}
+.pill.warn{background:color-mix(in srgb,var(--warn) 15%,transparent);color:var(--warn)}
+.pill.bad{background:color-mix(in srgb,var(--bad) 14%,transparent);color:var(--bad)}
+.pill.run{background:var(--chip);color:var(--muted)}
+.u{font-family:var(--mono);font-size:11px;color:var(--muted);word-break:break-all}
+footer{color:var(--muted);font-size:12px;padding-block:6px 40px;max-width:95ch}
+a{color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="kicker">GERS Digital Corridor Pilot · <a href="../">live map</a> · <a href="../../">strategy brief</a></div>
+  <h1>Can your browser read the nation’s work-zone feeds?</h1>
+  <p class="sub">This page tests every feed in USDOT’s official <b>Work Zone Data Feed Registry</b> (pulled 2026-11-23) directly from <i>your</i> browser. A green row means that feed could join the live GERS map today with one config entry — no server, no agreement. Key-gated and browser-blocked feeds are the measured case for a thin shared relay. This is the national adoption map, as a test you can run yourself.</p>
+</header>
+<div class="tiles" id="tiles"></div>
+<div class="tbl"><table>
+<thead><tr><th>State</th><th>Organization</th><th>Ver</th><th>Status</th><th>Feed URL</th></tr></thead>
+<tbody id="rows"></tbody>
+</table></div>
+<footer>Registry source: USDOT ITS DataHub, dataset 69qe-yiui (API keys redacted before publishing). “Blocked for browsers” means the server didn’t answer this page’s cross-origin request — the feed may still be perfectly healthy for server-side consumers; it just can’t be read browser-direct. Results depend on your network and can vary. The eight states already live on the <a href="../">map</a> are tested here too.</footer>
+</div>
+<script>
+const FEEDS=[{"state":"oklahoma","org":"Oklahoma DOT","feed":"odot","fmt":"geojson","ver":"4","url":"https://oktraffic.org/api/Geojsons/workzones?&access_token=REDACTED","key":true},{"state":"colorado","org":"Colorado DOT","feed":"cdot","fmt":"geojson","ver":"4.2","url":"https://data.cotrip.org/api/v1/wzdx?apiKey=REDACTED","key":true},{"state":"iowa","org":"Iowa DOT","feed":"idot","fmt":"geojson","ver":"4","url":"https://iowa-atms.cloud-q-free.com/api/rest/dataprism/wzdx/wzdxfeed","key":false},{"state":"nps","org":"National Park Service","feed":"nps","fmt":"geojson","ver":"4","url":"https://developer.nps.gov/api/v1/roadevents?type=workzone&api_key=REDACTED","key":true},{"state":"florida","org":"Florida DOT","feed":"fldot","fmt":"geojson","ver":"4.2","url":"https://us-datacloud.one.network/fdot/feed.json?app_key=REDACTED","key":true},{"state":"minnesota","org":"Minnesota DOT","feed":"mndot","fmt":"geojson","ver":"4","url":"https://mn.carsprogram.org/carsapi_v1/api/wzdx","key":false},{"state":"california","org":"Metropolitan Transportation Commission San Francisco","feed":"mtc","fmt":"geojson","ver":"4.1","url":"https://api.511.org/traffic/wzdx?api_key=REDACTED","key":true},{"state":"maryland","org":"Maryland DOT","feed":"mdot","fmt":"geojson","ver":"4.1","url":"https://filter.ritis.org/wzdx_v4.1/mdot.geojson","key":false},{"state":"arizona","org":"Maricopa County DOT","feed":"mcdot","fmt":"geojson","ver":"4.2","url":"https://wzdxapi.aztech.org/construction","key":false},{"state":"wisconsin","org":"Wisconsin DOT","feed":"wisdot","fmt":"json","ver":"4.1","url":"https://511wi.gov/api/wzdx","key":false},{"state":"missouri","org":"Missouri DOT","feed":"modot","fmt":"json","ver":"4.1","url":"https://traveler.modot.org/timconfig/feed/desktop/mo_wzdx.json","key":false},{"state":"virginia","org":"Virginia DOT","feed":"vdot","fmt":"geojson","ver":"4","url":"https://data.511-atis-ttrip-prod.iteriscloud.com/smarterRoads/workzone/workZoneJSON/current/workZone.json?token=REDACTED","key":true},{"state":"hawaii","org":"Hawaii DOT","feed":"hidot","fmt":"geojson","ver":"4.1","url":"https://ai.blyncsy.io/wzdx/hidot/feed","key":false},{"state":"new york","org":"New York DOT","feed":"nysdot","fmt":"geojson","ver":"4.1","url":"https://511ny.org/api/wzdx","key":false},{"state":"pennsylvania","org":"Pennsylvania Turnpike Commission","feed":"ptc","fmt":"geojson","ver":"4.1","url":"https://atms.paturnpike.com/api/WZDxWorkZoneFeed?api_key=REDACTED","key":true},{"state":"texas","org":"Texas DOT","feed":"txdot_v4_2","fmt":"geojson","ver":"4.2","url":"https://api.drivetexas.org/api/conditions.wzdx.geojson?key=REDACTED","key":true},{"state":"washington","org":"Washington State DOT","feed":"wsdot","fmt":"geojson","ver":"4.2","url":"https://wzdx.wsdot.wa.gov/api/v4/WorkZoneFeed","key":false},{"state":"missouri","org":"St. Charles County","feed":"stcharlesco_v4","fmt":"geojson","ver":"4","url":"https://scc.ridsi-dash.com:5000/wzdx.geojson","key":false},{"state":"new jersey","org":"New Jersey Institute of Technology","feed":"njdot","fmt":"geojson","ver":"4.1","url":"https://smartworkzones.njit.edu/nj/wzdx","key":false},{"state":"kentucky","org":"Kentucky Transportation Cabinet","feed":"kytc","fmt":"geojson","ver":"4.1","url":"https://storage.googleapis.com/kytc-its-2020-openrecords/public/feeds/WZDx/kytc_wzdx_v4.1.geojson","key":false},{"state":"kansas","org":"Kansas DOT","feed":"kansas","fmt":"geojson","ver":"4","url":"https://ks.carsprogram.org/carsapi_v1/api/wzdx","key":false},{"state":"texas","org":"City of Austin","feed":"austin","fmt":"geojson","ver":"4.2","url":"https://data.austintexas.gov/download/d9mm-cjw9","key":false},{"state":"illinois","org":"Illinois Tollway","feed":"iltollway","fmt":"geojson","ver":"4.2","url":"https://tims2go.tollway.state.il.us/wzdx/v4.2?api_key=REDACTED","key":true},{"state":"ohio","org":"Ohio DOT","feed":"ohio","fmt":"geojson","ver":"4.2","url":"https://publicapi.ohgo.com/api/work-zones/wzdx/4.2?api-key=REDACTED","key":true},{"state":"delaware","org":"Delaware DOT","feed":"dedot","fmt":"geojson","ver":"4.1","url":"https://wzdx.e-dot.com/del_dot_feed_wzdx_v4.1.geojson","key":false},{"state":"n/a","org":"Quebec City","feed":"quebec","fmt":"geojson","ver":"3.1","url":"https://quebec.gewi.com/wzdx/pull","key":false},{"state":"louisiana","org":"Louisiana DOTD","feed":"ladotd","fmt":"geojson","ver":"4.1","url":"https://wzdx.e-dot.com/la_dot_d_feed_wzdx_v4.1.geojson","key":false},{"state":"colorado","org":"Colorado DOT","feed":"cdot_cwz","fmt":"geojson","ver":"CWZ 1.0","url":"https://data.cotrip.org/api/v1/cwz?apiKey=REDACTED","key":true},{"state":"idaho","org":"Idaho DOT","feed":"iddot","fmt":"geojson","ver":"4.1","url":"https://511.idaho.gov/api/wzdx","key":false},{"state":"indiana","org":"Indiana DOT","feed":"indot","fmt":"geojson","ver":"4.1","url":"https://in.carsprogram.org/carsapi_v1/api/wzdx","key":false},{"state":"n/a","org":"CivicLink","feed":"CivicLink_CrewCast","fmt":"geojson","ver":"4.2","url":"https://road-connect-community-bry7272.replit.app/api/wzdx/work-zones.geojson","key":false},{"state":"michigan","org":"Michigan DOT","feed":"mdot_4","fmt":"geojson","ver":"4","url":"https://mdotridedata.state.mi.us//api/v1/organization/michigan_department_of_transportation/dataset/work_zone_information/query?limit=200&_format=json","key":true},{"state":"massachusetts","org":"Massachusetts DOT","feed":"massdot__cwz","fmt":"geojson","ver":"CWZ 1.0","url":"https://api.massdot-swzm.com/api/v1/cwz/work-zone-feed","key":true},{"state":"n/a","org":"PurposeBuilt Systems, LLC","feed":"pbs","fmt":"geojson","ver":"CWZ 1.0","url":"https://feeds.purposebuilt.systems/cwz","key":false},{"state":"Illinois","org":"IDOT","feed":"idot_cwz","fmt":"geojson","ver":"CWZ 1.0","url":"https://wzad-idot.illinois.gov/cwz/01.00?api_key=REDACTED","key":true},{"state":"New Hampshire, Vermont, Maine","org":"NHDOT/VTAOT/MEDOT","feed":"necdot","fmt":"geojson","ver":"4.2","url":"https://api.dx.ne-compass.com/wzdx-latest/","key":false},{"state":"north carolina","org":"North Carolina DOT","feed":"ncdot","fmt":"geojson","ver":"4.2","url":"https://drivenc.gov/api/wzdx","key":true},{"state":"oregon","org":"Oregon DOT","feed":"ordot","fmt":"geojson","ver":"4","url":"https://api.odot.state.or.us/WZDx/v4.0/Workzones","key":true},{"state":"mississippi","org":"Mississippi DOT","feed":"msdot","fmt":"geojson","ver":"4.2","url":"https://api.mdottraffic.com/prod/v3/data/wzdx","key":false},{"state":"North Dakota","org":"North Dakota DOT","feed":"nddot","fmt":"geojson","ver":"4","url":"https://travelfiles.dot.nd.gov/geojson_nc/wzdx_geojson.json","key":false},{"state":"florida","org":"Florida DOT","feed":"fdot","fmt":"geojson","ver":"4.2","url":"https://api.depot.fdot.gov/wzdx-latest","key":false},{"state":"south dakota","org":"South Dakota DOT","feed":"sddot","fmt":"geojson","ver":"CWZ 1.0","url":"https://sd.cdn.iteris-atis.com/wzdx/sd_wzdx_v1.geojson","key":false}];
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const tb=document.getElementById('rows');
+FEEDS.forEach((f,i)=>{
+  const tr=document.createElement('tr');
+  tr.innerHTML='<td class="st">'+esc(f.state)+'</td><td>'+esc(f.org)+'</td><td>'+esc(f.ver||'')+'</td>'+
+    '<td id="s'+i+'">'+(f.key?'<span class="pill warn">API key required</span>':'<span class="pill run">testing…</span>')+'</td>'+
+    '<td class="u">'+esc(f.url)+'</td>';
+  tb.appendChild(tr);
+});
+function tally(res){
+  const ok=res.filter(r=>r==='ok').length, key=FEEDS.filter(f=>f.key).length,
+        blocked=res.filter(r=>r==='blocked').length, err=res.filter(r=>r==='err').length;
+  document.getElementById('tiles').innerHTML=
+    '<div class="tile"><div class="n">'+FEEDS.length+'</div><div class="l">Registry feeds</div></div>'+
+    '<div class="tile ok"><div class="n">'+ok+'</div><div class="l">Browser-direct now</div></div>'+
+    '<div class="tile warn"><div class="n">'+key+'</div><div class="l">API key required</div></div>'+
+    '<div class="tile bad"><div class="n">'+blocked+'</div><div class="l">Blocked for browsers</div></div>'+
+    '<div class="tile"><div class="n">'+err+'</div><div class="l">Error / offline</div></div>';
+}
+const results=new Array(FEEDS.length).fill(null);
+let done=0;
+tally([]);
+FEEDS.forEach((f,i)=>{
+  if(f.key){ results[i]='key'; if(++done===FEEDS.length) tally(results); return; }
+  const cell=()=>document.getElementById('s'+i);
+  const ctl=new AbortController(); const t=setTimeout(()=>ctl.abort(),15000);
+  fetch(f.url,{signal:ctl.signal}).then(async r=>{
+    clearTimeout(t);
+    if(!r.ok){ results[i]='err'; cell().innerHTML='<span class="pill bad">HTTP '+r.status+'</span>'; return; }
+    let n=null; try{ const d=await r.json(); n=(d.features||d.road_events||[]).length; }catch(e){}
+    results[i]='ok';
+    cell().innerHTML='<span class="pill ok">OK'+(n!=null?' · '+n+' events':'')+'</span>';
+  }).catch(()=>{ clearTimeout(t); results[i]='blocked'; cell().innerHTML='<span class="pill bad">Blocked for browsers (CORS)</span>'; })
+  .finally(()=>{ if(++done===FEEDS.length) tally(results); });
+});
+</script>
+</body>
+</html>
