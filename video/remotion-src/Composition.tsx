@@ -3,7 +3,7 @@ import {AbsoluteFill, Sequence, interpolate, spring, useCurrentFrame, useVideoCo
 import {loadFont as loadOverpass} from '@remotion/google-fonts/Overpass';
 import {loadFont as loadInter} from '@remotion/google-fonts/Inter';
 import {loadFont as loadMono} from '@remotion/google-fonts/OverpassMono';
-import {C, statePathsUS, statePathsMW, routePaths, eventDots, freightD, freightAt} from './geo';
+import {C, statePathsUS, liveStatePaths, liveEventDots, freightD, freightAt} from './geo';
 
 const {fontFamily: OV} = loadOverpass();
 const {fontFamily: IN} = loadInter();
@@ -31,7 +31,7 @@ const Title: React.FC = () => {
       <div style={{display: 'flex', flexDirection: 'column', gap: 38}}>
         <Fade from={0}><Kicker>USDOT DIGITAL CORRIDORS · A WORKING DEMONSTRATION</Kicker></Fade>
         <Fade from={10}><div style={{fontFamily: OV, fontWeight: 800, fontSize: 118, lineHeight: 1.04, color: C.ink}}>One road segment.<br />One ID. Every dataset.</div></Fade>
-        <Fade from={26}><div style={{fontFamily: IN, fontSize: 36, color: C.muted, width: 1350}}>Four state DOTs’ live feeds, one open segment reference — and what that unlocks for freight, safety, and every user of the interstates.</div></Fade>
+        <Fade from={26}><div style={{fontFamily: IN, fontSize: 36, color: C.muted, width: 1350}}>Eight state DOTs’ live feeds, one open segment reference — joined in the browser, on the national interstate network, today.</div></Fade>
       </div>
       <div style={{position: 'relative', height: 160}}>
         <svg width={1640} height={60} style={{position: 'absolute', top: 70}}>
@@ -100,40 +100,40 @@ const National: React.FC = () => {
 const Join: React.FC = () => {
   const f = useCurrentFrame();
   const mapIn = interpolate(f, [0, 25], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
-  const draw = interpolate(f, [20, 180], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: Easing.inOut(Easing.quad)});
-  const wave = interpolate(f, [330, 480], [0, 1920], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: Easing.inOut(Easing.quad)});
+  const draw = interpolate(f, [20, 170], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: Easing.inOut(Easing.quad)});
+  const wave = interpolate(f, [320, 500], [0, 1920], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: Easing.inOut(Easing.quad)});
   return (
     <AbsoluteFill style={{background: C.bg}}>
       <svg width={1920} height={1080} style={{opacity: mapIn}}>
-        {statePathsMW.map((s) => (
-          <path key={s.name} d={s.d} fill={s.active ? '#1E2630' : C.panel} stroke={C.line} strokeWidth={1.6} strokeDasharray="6 6" />
+        {statePathsUS.map((s) => (
+          <path key={s.name} d={s.d} fill={C.panel} stroke={C.line} strokeWidth={1.2} strokeDasharray="5 5" />
         ))}
-        {routePaths.map((r, i) => (
-          <path key={r.route} d={r.d} fill="none" stroke={C.road} strokeWidth={3.2} pathLength={1} strokeDasharray={1}
-            strokeDashoffset={Math.max(0, 1 - Math.max(0, draw * 1.6 - i * 0.05))} strokeLinecap="round" />
+        {liveStatePaths.map((r, i) => (
+          <path key={r.state} d={r.d} fill="none" stroke={C.road} strokeWidth={2} pathLength={1} strokeDasharray={1}
+            strokeDashoffset={Math.max(0, 1 - Math.max(0, draw * 1.5 - i * 0.05))} strokeLinecap="round" />
         ))}
-        {eventDots.map((e, i) => {
-          const t = interpolate(f, [170 + (i % 40) * 3, 184 + (i % 40) * 3], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
+        {liveEventDots.map((e, i) => {
+          const t = interpolate(f, [160 + (i % 60) * 2, 174 + (i % 60) * 2], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
           const matched = e.x < wave;
           return (
             <g key={i} opacity={t}>
-              {matched && <circle cx={e.x} cy={e.y} r={11} fill="none" stroke={C.orange} strokeWidth={2.5} opacity={0.85} />}
-              <circle cx={e.x} cy={e.y} r={5.5} fill={C[e.s] as string} stroke={C.bg} strokeWidth={1.5} />
+              {matched && <circle cx={e.x} cy={e.y} r={7.5} fill="none" stroke={C.orange} strokeWidth={1.8} opacity={0.8} />}
+              <circle cx={e.x} cy={e.y} r={3.4} fill={C[e.s] as string} stroke={C.bg} strokeWidth={1} />
             </g>
           );
         })}
       </svg>
       <div style={{position: 'absolute', left: 140, top: 92}}>
-        <Fade from={6}><Kicker>IOWA · NEBRASKA · MINNESOTA · MISSOURI — LIVE 511 FEEDS</Kicker></Fade>
+        <Fade from={6}><Kicker>EIGHT STATES · LIVE 511 &amp; WZDX FEEDS · FETCHED TODAY</Kicker></Fade>
         <Fade from={18}><div style={{fontFamily: OV, fontWeight: 800, fontSize: 64, color: C.ink, lineHeight: 1.1}}>Conflate once. Join forever.</div></Fade>
       </div>
       <div style={{position: 'absolute', right: 140, top: 110}}>
-        <Fade from={320} rise={14}>
+        <Fade from={310} rise={14}>
           <div style={{fontFamily: MONO, fontSize: 27, color: C.orange, background: '#242C34', border: `2px solid ${C.orange}`, borderRadius: 10, padding: '12px 20px'}}>gers_id + overture_release</div>
         </Fade>
       </div>
       <div style={{position: 'absolute', left: 140, bottom: 90}}>
-        <Fade from={480}><div style={{fontFamily: IN, fontSize: 34, color: C.muted, width: 1250}}>306 real events, four schemas, one keyed network — <span style={{color: C.ink, fontWeight: 600}}>each state keeps its own data, its own LRS, its own authority.</span></div></Fade>
+        <Fade from={500}><div style={{fontFamily: IN, fontSize: 34, color: C.muted, width: 1340}}>2,299 real events, eight schemas, one keyed network — <span style={{color: C.ink, fontWeight: 600}}>and the live map re-runs this join in your browser on every page load.</span></div></Fade>
       </div>
     </AbsoluteFill>
   );
@@ -228,9 +228,9 @@ const Numbers: React.FC = () => (
   <AbsoluteFill style={{background: C.bg, padding: 140, justifyContent: 'center', gap: 70}}>
     <Fade from={0}><Kicker>EVERY NUMBER AUDITABLE ON THE PUBLIC DEMO</Kicker></Fade>
     <div style={{display: 'flex', gap: 90}}>
-      <Stat value="306" label="live 511 events, four states" from={10} />
-      <Stat value="99%" label="interstate events auto-matched" from={22} accent />
-      <Stat value="3.4 m" label="median snap distance" from={34} accent />
+      <Stat value="2,299" label="live events on screen — fetched today" from={10} />
+      <Stat value="8" label="states on one keyed network" from={22} accent />
+      <Stat value="2.3 m" label="median snap, matched in-browser" from={34} accent />
       <Stat value="1 day" label="for a state to adopt, with the open playbook" from={46} />
     </div>
     <Fade from={70}><div style={{fontFamily: IN, fontSize: 34, color: C.muted, width: 1500}}>Built on the states’ own public feeds and the open Overture reference — no agreements, no API keys, no procurement. <span style={{color: C.ink, fontWeight: 600}}>The barrier was never technical.</span></div></Fade>

@@ -11,9 +11,9 @@ sequences, or rebuild shots from the raw GeoJSON rather than compositing over th
 |---|------|--------|-------|----------|
 | 1 | 0:00–0:08 | 0–239 | **Title** | "One road segment. One ID. Every dataset." Orange segment draws on a gray road line; three dataset dots (purple/green/blue) attach; mono chips: state 511 feed · fleet observation · federal attributes · gers_id. |
 | 2 | 0:08–0:27 | 240–809 | **National fragmentation** | Dark US map (real Overture state boundaries, Albers projection). Orange freight path traces Port of Long Beach → Omaha (I-15/I-70/I-80 waypoints) with a moving dot; five mismatched "data dialect" chips pop at border crossings (CA postmile, NV milepost, UT ref, CO route/mp, NE lat/lon). Caption: "Every border, a new data dialect." |
-| 3 | 0:27–0:49 | 810–1469 | **The join** | Midwest window. Real interstate geometry (11,997 Overture segments, grouped per route) draws on; 306 real 511 events pop as dots colored by state (IA purple, NE green, MN cyan, MO rose); orange match-wave sweeps west→east ringing each dot; chip "gers_id + overture_release". Caption: "Conflate once. Join forever." |
+| 3 | 0:27–0:49 | 810–1469 | **The join (national, v3)** | The whole CONUS: live-state interstate networks draw on; 2,299 of today's real events pop in eight state colors (IA·NE·MN·MO·GA·UT·NM·KY); the orange match-wave sweeps coast-to-coast. Caption notes the live map re-runs the join in the browser. |
 | 4 | 0:49–1:05 | 1470–1949 | **The local mile** | Diagrammatic freeway over a local street grid. Traffic dots flow; a crash closes a red segment; the orange detour draws through the grid and dots reroute; signals turn green in sequence; cascade chips: signal retiming plan, officers dispatched, incident_id ↔ gers_id. Captions: "nobody tells the city" → "every hour charges back to the incident." |
-| 5 | 1:05–1:19 | 1950–2369 | **Numbers** | Spring-in stat cards: 306 · 99% · 3.4 m · 1 day. |
+| 5 | 1:05–1:19 | 1950–2369 | **Numbers (v3)** | Spring-in stat cards: 2,299 · 8 states · 2.3 m · 1 day. |
 | 6 | 1:19–1:29 | 2370–2669 | **Close** | "The feeds exist. The reference exists. The conflation is solved." + site URL. |
 
 ## Design tokens

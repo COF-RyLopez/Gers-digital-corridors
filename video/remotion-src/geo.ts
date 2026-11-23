@@ -2,6 +2,8 @@ import {geoAlbers, geoPath, geoArea, GeoProjection} from 'd3-geo';
 import usStatesRaw from './us_states.json';
 import segments from './video_segments.json';
 import events from './video_events.json';
+import eventsV3 from './video_events_v3.json';
+import liveStates from './video_live_states.json';
 
 // d3-geo uses spherical winding; RFC 7946 rings render inverted. Rewind oversized rings.
 const rewindRing = (ring: number[][]) =>
@@ -20,6 +22,7 @@ export const C = {
   bg: '#14181D', panel: '#1C2228', ink: '#E8EDF2', muted: '#93A0AD', line: '#2D353E',
   blue: '#5AA4E0', orange: '#F08A2E', road: '#49555F',
   IA: '#A78CE0', NE: '#4FB06C', MN: '#4DB3D6', MO: '#E0707A',
+  GA: '#D8C155', UT: '#E0876A', NM: '#A4C653', KY: '#6FB3DC',
 } as const;
 
 const W = 1920, H = 1080;
@@ -91,3 +94,12 @@ export const freightAt = (t: number): [number, number] => {
   const [x0, y0] = freightPts[i - 1], [x1, y1] = freightPts[i];
   return [x0 + (x1 - x0) * f, y0 + (y1 - y0) * f];
 };
+
+// --- v3: national live layer ---
+const pathUSd = geoPath(projUS);
+export const liveStatePaths: {state: string; d: string}[] = (liveStates as any[])
+  .map((s) => ({state: s.state, d: pathUSd(s.g) ?? ''}))
+  .filter((s) => s.d);
+export const liveEventDots: {s: keyof typeof C; x: number; y: number}[] = (eventsV3 as any[])
+  .map((e) => { const p = projUS(e.c as [number, number]); return p ? {s: e.s, x: p[0], y: p[1]} : null; })
+  .filter(Boolean) as never;

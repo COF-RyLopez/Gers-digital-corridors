@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Digital Corridors Handoff</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Overpass:wght@400;600;700;800&family=Overpass+Mono:wght@400;600&family=Inter:wght@400;500;600;700&display=swap">
+<style>
+:root{--bg:#f5f7f9;--surface:#ffffff;--fg:#1a2129;--muted:#5b6672;--line:#d9dfe6;--accent:#0b63b8;--wz:#c45f06;--ok:#1f9d55;--chip:#eef2f5;
+--display:'Overpass',system-ui,sans-serif;--body:'Inter',system-ui,sans-serif;--mono:'Overpass Mono',ui-monospace,monospace}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#14181d;--surface:#1c2228;--fg:#e8edf2;--muted:#96a3b0;--line:#2d353e;--accent:#5aa4e0;--wz:#f08a2e;--ok:#3dc97a;--chip:#242c34;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#14181d;--surface:#1c2228;--fg:#e8edf2;--muted:#96a3b0;--line:#2d353e;--accent:#5aa4e0;--wz:#f08a2e;--ok:#3dc97a;--chip:#242c34;color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);margin:0;font-size:15px;line-height:1.62}
+.wrap{max-width:880px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{padding-block:34px 10px}
+.kicker{font-family:var(--display);font-weight:600;letter-spacing:.12em;text-transform:uppercase;font-size:11px;color:var(--muted)}
+.kicker a{color:var(--accent)}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(26px,5vw,36px);line-height:1.12;margin:.2em 0;text-wrap:balance}
+.standfirst{font-size:17px;color:var(--muted);max-width:68ch;margin:0 0 10px}
+.standfirst b{color:var(--fg)}
+h2{font-family:var(--display);font-weight:800;font-size:21px;margin:2em 0 .5em}
+h2 .no{color:var(--accent);margin-right:.4em}
+h3{font-family:var(--display);font-weight:700;font-size:15.5px;margin:1.4em 0 .4em}
+p{margin:.55em 0;max-width:72ch}
+ul,ol{max-width:72ch;padding-left:1.3em;margin:.5em 0}
+li{margin:.3em 0}
+a{color:var(--accent)}
+code{font-family:var(--mono);font-size:.88em;background:var(--chip);border-radius:4px;padding:.08em .35em}
+.callout{border:1px solid var(--line);border-left:4px solid var(--accent);background:var(--surface);border-radius:8px;padding:14px 18px;margin:1.2em 0;max-width:76ch}
+.callout.go{border-left-color:var(--ok)}
+.callout h3{margin:0 0 6px}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;margin:1em 0}
+.cols .card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:13px 16px}
+.cols h3{margin:0 0 6px;font-size:14px}
+.cols p{font-size:13px;color:var(--muted);margin:0}
+.tbl{overflow-x:auto;margin:1em 0;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:620px}
+th{font-family:var(--display);font-weight:700;text-align:left;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+th,td{padding:9px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+tbody tr:last-child td{border-bottom:0}
+footer{padding-block:30px 44px;color:var(--muted);font-size:12.5px;border-top:1px solid var(--line);margin-top:40px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="kicker">Overture Maps Foundation community · Discussion material for USDOT · <a href="../">strategy brief</a> · <a href="../demo/">live map</a></div>
+  <h1>A shared “where” for the Digital Corridors — demonstrated, and ready to hand over</h1>
+  <p class="standfirst">What was built, what it proved, and how USDOT can carry it past the states — to the OEMs, ADAS platforms, freight carriers, and local agencies who would subscribe to these feeds the same way this demonstration already does. <b>Everything here is open, reproducible, and running today.</b></p>
+</header>
+
+<h2><span class="no">1</span>What was demonstrated</h2>
+<ul>
+  <li><b>A national reference network that already exists.</b> Every signed US interstate — 77,220 Overture segments with stable GERS identifiers — serves as the shared vocabulary. Free, versioned monthly, published on open infrastructure, on a standardization path with OGC.</li>
+  <li><b>Live multi-state conflation, with no infrastructure at all.</b> A public web page fetches state DOTs’ existing 511/WZDx feeds and joins them to GERS identifiers <i>in the viewer’s browser</i>: in testing, ~3,500 live events from seven states, ~1,500 matched at <b>2.3 m median snap</b>, with method and distance recorded on every join. Four feed schemas, including one with no structured location field at all, read as one keyed dataset. <a href="../demo/">See it live</a>.</li>
+  <li><b>The national inventory, measured.</b> Every feed in USDOT’s Work Zone Data Feed Registry was probed (<a href="../demo/feeds/">a public page re-runs the test from any browser</a>): 35 states publish; 14 feeds sit behind API keys; the rest are one reachability header away from joining. Notably, <b>four live statewide feeds (GA, NE, UT, NM) were found outside the registry</b> — actual availability exceeds the official count.</li>
+  <li><b>The replication kit.</b> An open-source tagger (feed in → GERS-referenced feed out, with a match report), a <a href="https://github.com/COF-RyLopez/Gers-digital-corridors/blob/main/PLAYBOOK.md">one-day adoption playbook</a> per state, and this entire demonstration as a public repository.</li>
+</ul>
+<div class="callout go">
+  <h3>The sentence this earns</h3>
+  <p>Cross-state conflation is no longer the hard part of Digital Corridors — a browser does it on page load. The remaining work is adoption: an optional <code>location_references</code> field in CWZ/WZDx, keys or a thin relay for the gated feeds, and a seat for the subscribers below.</p>
+</div>
+
+<h2><span class="no">2</span>Who subscribes next — the same way this page does</h2>
+<p>The demonstration consumes public feeds exactly as any third party would: fetch, join on the segment ID, done. Every group below can subscribe today with the same three steps — and several can also <i>publish back</i> on the same key.</p>
+<div class="cols">
+  <div class="card"><h3>OEMs &amp; ADAS platforms</h3><p>Consume work zones keyed to segments for in-vehicle alerts — one integration valid in every participating state, instead of per-state agreements. Publish back aggregated observations (work-zone confirmations, hard-braking clusters, road damage) on the same IDs: the Waymo–Waze pothole precedent, made portable and vendor-neutral.</p></div>
+  <div class="card"><h3>Navigation &amp; freight platforms</h3><p>Pre-trip truck routing around construction across jurisdictions; consume authoritative truck-route and restriction layers on the same key as they come online. A 2,000-mile load planned the way airlines plan around weather.</p></div>
+  <div class="card"><h3>Cities &amp; counties</h3><p>Subscribe to the segments feeding their street grids: a freeway closure triggers signal retiming plans and officer dispatch for the detour load, with the emergency-services incident ID carried beside the segment ID for cost recovery.</p></div>
+  <div class="card"><h3>Corridor coalitions &amp; TMCs</h3><p>One corridor picture across member states without bilateral integration; event-driven coordination (construction holds, debris surges) instead of phone trees.</p></div>
+  <div class="card"><h3>Insurers, researchers, analysts</h3><p>Segment-keyed event and exposure histories — crash context, work-zone exposure, disruption frequency — joinable to any other segment-keyed dataset without conflation projects.</p></div>
+  <div class="card"><h3>FHWA / BTS</h3><p>The national needs ledger: usage, risk, condition, and disruption on one segment vocabulary, so “which roads cost the nation the most” becomes a query over open data.</p></div>
+</div>
+
+<h2><span class="no">3</span>What USDOT could do with this on Monday</h2>
+<ol>
+  <li><b>Accept the reference where it costs nothing:</b> an optional, additive <code>location_references</code> entry (segment ID + reference-dataset release) in the CWZ/WZDx spec — precedent exists, since WZDx already carries parallel location descriptions.</li>
+  <li><b>Measure coverage in the registry:</b> add columns for browser reachability (CORS) and shared-reference coverage — the <a href="../demo/feeds/">feed tester</a> shows the data is one probe away — and fold in the live statewide feeds currently missing from it.</li>
+  <li><b>Point GADC applicants at the kit:</b> the playbook makes “publish a GERS-referenced feed” a one-line, verifiable work item in any corridor data plan.</li>
+  <li><b>Stand up the thin relay once, for the key-gated feeds:</b> one small shared service holding the 14 API keys and re-publishing those feeds with references attached — the only new infrastructure this entire picture requires.</li>
+  <li><b>Convene the subscribers:</b> the OEM and ADAS companies already coordinate in AVSC; nav and freight platforms already consume WZDx. The ask to each is one pilot, one corridor, one observation class.</li>
+</ol>
+
+<h2><span class="no">4</span>Where everything lives</h2>
+<div class="tbl"><table>
+<thead><tr><th>Artifact</th><th>Where</th></tr></thead>
+<tbody>
+<tr><td>Live national map</td><td><a href="../demo/">…/demo/</a> — live feeds, in-browser conflation, sensors, cameras</td></tr>
+<tr><td>Feed tester</td><td><a href="../demo/feeds/">…/demo/feeds/</a> — the registry, probed from your browser</td></tr>
+<tr><td>Adoption playbook</td><td><a href="https://github.com/COF-RyLopez/Gers-digital-corridors/blob/main/PLAYBOOK.md">PLAYBOOK.md</a> — about a day per state</td></tr>
+<tr><td>Open-source tagger</td><td><a href="https://github.com/COF-RyLopez/Gers-digital-corridors/blob/main/tools/gers_tagger.py">tools/gers_tagger.py</a> — feed in, referenced feed + match report out</td></tr>
+<tr><td>Explainer video</td><td><a href="../video/gers-digital-corridors.mp4">89-second film</a> built from the same data</td></tr>
+<tr><td>Strategy &amp; architecture</td><td><a href="../">The brief</a> — the observation profile, operations ladder, and federation architecture</td></tr>
+<tr><td>Everything, forkable</td><td><a href="https://github.com/COF-RyLopez/Gers-digital-corridors">github.com/COF-RyLopez/Gers-digital-corridors</a></td></tr>
+</tbody></table></div>
+
+<footer>
+Discussion material — not an official position of the Overture Maps Foundation or USDOT. Road geometry and identifiers: Overture Maps Foundation release 2026-11-18.0 (transportation, divisions, buildings themes; includes © OpenStreetMap contributors data). Event data remains the property of the publishing agencies, consumed via their public feeds. Match statistics are measured, dated, and reproducible from the repository.
+</footer>
+</div>
+</body>
+</html>
