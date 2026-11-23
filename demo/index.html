@@ -307,8 +307,10 @@ a{color:var(--accent)}
       ];
       const layerUrl=d=>d.url||`${AGOL}/${d.svc}/FeatureServer/${d.layer||0}`;
       const plain=async u=>{const ctl=new AbortController();const t=setTimeout(()=>ctl.abort(),20000);const r=await fetch(u,{signal:ctl.signal});clearTimeout(t);if(!r.ok)throw new Error('feed http '+r.status);let d=await r.json();if(typeof d==='string')d=JSON.parse(d);return d.features||d.road_events||[];};
+      // ArcGIS/CDNs intermittently serve an empty-but-200 result; one retry settles it
+      const once=async f=>{let v=await f();if(!v.length)v=await f();return v;};
       const results=await Promise.allSettled([
-        ...defs.map(d=>d.geojson?plain(d.relay?RELAY+encodeURIComponent(d.geojson):d.geojson):agol(layerUrl(d))),
+        ...defs.map(d=>once(()=>d.geojson?plain(d.relay?RELAY+encodeURIComponent(d.geojson):d.geojson):agol(layerUrl(d)))),
         agol(`${AGOL}/RWIS_Traffic_Data_View/FeatureServer/0`),
         agol(`${AGOL}/Traffic_Cameras_View/FeatureServer/0`)
       ]);
