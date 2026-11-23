@@ -106,7 +106,7 @@ a{color:var(--accent)}
 <header class="wrap">
   <div class="kicker">Overture Maps Foundation community · Digital Corridors concept pilot · <a href="../">strategy brief</a></div>
   <h1>One road segment. One ID. Every dataset.</h1>
-  <p class="sub"><b>Every interstate in the United States</b> on one keyed Overture network — with <b>live 511 events from seven state DOTs</b> (Iowa, Nebraska, Minnesota, Missouri, Georgia, Utah, New Mexico — Kentucky wired, pending its host's CORS) fetched by your own browser and <b>conflated to GERS IDs on this page, right now</b>, plus live traffic sensors and DOT cameras. Each state keeps its own schema and linear referencing; the GERS ID is only the join key. The dark network is the invitation: every state that publishes a feed can light up. Click any segment, event, sensor, or camera.</p>
+  <p class="sub"><b>Every interstate in the United States</b> on one keyed Overture network — with <b>live 511/WZDx events from over twenty state DOT feeds</b>, fetched by your own browser (directly where the publishing host allows it, and through a thin allowlisted relay where it doesn't — the same pattern USDOT could run once, nationally) and <b>conflated to GERS IDs on this page, right now</b>, plus live traffic sensors and DOT cameras. Each state keeps its own schema and linear referencing; the GERS ID is only the join key. The dark network is the invitation: every state that publishes a feed can light up. Click any segment, event, sensor, or camera.</p>
   <div class="tabs" role="tablist">
     <button class="tab" role="tab" id="tab-i80" aria-selected="true"><span class="live"></span>National network · live multi-state feeds</button>
     <button class="tab" role="tab" id="tab-fresno">SR-99 · Fresno — AV feedback concept</button>
@@ -249,7 +249,9 @@ a{color:var(--accent)}
   }
 
   /* ---------- live loader ---------- */
-  const DETAIL_BASE='data/detail/';
+  const R2='https://pub-f93ef813d5df4ff2ab7541dbdbf0ce49.r2.dev/';
+  const RELAY='https://gers-feed-relay.ryanclopez1.workers.dev/?url=';
+  const DETAIL_BASE=R2+'data/detail/';
   const FALLBACK_STATES=['IA','NE','MN','MO','GA','UT','NM'];
   const SCOLORS={IA:'--ia',NE:'--ne',MN:'--mn',MO:'--mo',GA:'--ga',UT:'--ut',NM:'--nm',KY:'--ky'};
   const stateColor=st=>SCOLORS[st]?css(SCOLORS[st]):`hsl(${((st.charCodeAt(0)*73+(st.charCodeAt(1)||7)*31)%360)} 62% 52%)`;
@@ -281,30 +283,32 @@ a{color:var(--accent)}
         {url:'https://services6.arcgis.com/KaHXE9OkiB9e63uE/arcgis/rest/services/UDOT_Events/FeatureServer/0',state:'UT',m:p=>({route:(p.Name&&p.Name!=='None')?p.Name:p.Location,headline:(p.EventCategory||'Event')+((p.Location&&p.Location!=='None')?' — '+p.Location:''),cause:(p.Description||'').slice(0,180),direction:p.DirectionOfTravel,updated:p.LastUpdated*1000})},
         {url:'https://services1.arcgis.com/fXHQyq63u0UsTeSM/arcgis/rest/services/NMRoads_Events_Public/FeatureServer/0',state:'NM',m:wz},
         {url:'https://services1.arcgis.com/fXHQyq63u0UsTeSM/arcgis/rest/services/NMRoads_Events_Public/FeatureServer/1',state:'NM',m:wz},
-        {geojson:'https://storage.googleapis.com/kytc-its-2020-openrecords/public/feeds/WZDx/kytc_wzdx_v4.1.geojson',state:'KY',m:wz},
-        // USDOT Work Zone Data Feed Registry — open-URL feeds, tried browser-direct; failures no-op
-        {geojson:'https://wzdxapi.aztech.org/construction',state:'AZ',m:wz},
+        {geojson:'https://storage.googleapis.com/kytc-its-2020-openrecords/public/feeds/WZDx/kytc_wzdx_v4.1.geojson',state:'KY',relay:true,m:wz},
+        // USDOT Work Zone Data Feed Registry — open-URL feeds. relay:true routes through the
+        // allowlisted CORS relay (gers-feed-relay); the rest are browser-direct. Failures no-op.
+        // 511ny.org omitted: it serves a bot-challenge page, not data. 511wi.gov blocks
+        // datacenter IPs, so it stays browser-direct and lights up only if WI adds CORS.
+        {geojson:'https://wzdxapi.aztech.org/construction',state:'AZ',relay:true,m:wz},
         {geojson:'https://511wi.gov/api/wzdx',state:'WI',m:wz},
-        {geojson:'https://traveler.modot.org/timconfig/feed/desktop/mo_wzdx.json',state:'MO',m:wz},
-        {geojson:'https://ai.blyncsy.io/wzdx/hidot/feed',state:'HI',m:wz},
-        {geojson:'https://511ny.org/api/wzdx',state:'NY',m:wz},
-        {geojson:'https://wzdx.wsdot.wa.gov/api/v4/WorkZoneFeed',state:'WA',m:wz},
-        {geojson:'https://ks.carsprogram.org/carsapi_v1/api/wzdx',state:'KS',m:wz},
-        {geojson:'https://in.carsprogram.org/carsapi_v1/api/wzdx',state:'IN',m:wz},
-        {geojson:'https://wzdx.e-dot.com/del_dot_feed_wzdx_v4.1.geojson',state:'DE',m:wz},
-        {geojson:'https://wzdx.e-dot.com/la_dot_d_feed_wzdx_v4.1.geojson',state:'LA',m:wz},
-        {geojson:'https://511.idaho.gov/api/wzdx',state:'ID',m:wz},
-        {geojson:'https://api.mdottraffic.com/prod/v3/data/wzdx',state:'MS',m:wz},
-        {geojson:'https://travelfiles.dot.nd.gov/geojson_nc/wzdx_geojson.json',state:'ND',m:wz},
-        {geojson:'https://sd.cdn.iteris-atis.com/wzdx/sd_wzdx_v1.geojson',state:'SD',m:wz},
-        {geojson:'https://filter.ritis.org/wzdx_v4.1/mdot.geojson',state:'MD',m:wz},
-        {geojson:'https://smartworkzones.njit.edu/nj/wzdx',state:'NJ',m:wz},
-        {geojson:'https://api.dx.ne-compass.com/wzdx-latest/',state:'NEC',label:'NH·VT·ME (NE Compass)',detail:['NH','VT','ME'],m:wz},
+        {geojson:'https://traveler.modot.org/timconfig/feed/desktop/mo_wzdx.json',state:'MO',relay:true,m:wz},
+        {geojson:'https://ai.blyncsy.io/wzdx/hidot/feed',state:'HI',relay:true,m:wz},
+        {geojson:'https://wzdx.wsdot.wa.gov/api/v4/WorkZoneFeed',state:'WA',relay:true,m:wz},
+        {geojson:'https://ks.carsprogram.org/carsapi_v1/api/wzdx',state:'KS',relay:true,m:wz},
+        {geojson:'https://in.carsprogram.org/carsapi_v1/api/wzdx',state:'IN',relay:true,m:wz},
+        {geojson:'https://wzdx.e-dot.com/del_dot_feed_wzdx_v4.1.geojson',state:'DE',relay:true,m:wz},
+        {geojson:'https://wzdx.e-dot.com/la_dot_d_feed_wzdx_v4.1.geojson',state:'LA',relay:true,m:wz},
+        {geojson:'https://511.idaho.gov/api/wzdx',state:'ID',relay:true,m:wz},
+        {geojson:'https://api.mdottraffic.com/prod/v3/data/wzdx',state:'MS',relay:true,m:wz},
+        {geojson:'https://travelfiles.dot.nd.gov/geojson_nc/wzdx_geojson.json',state:'ND',relay:true,m:wz},
+        {geojson:'https://sd.cdn.iteris-atis.com/wzdx/sd_wzdx_v1.geojson',state:'SD',relay:true,m:wz},
+        {geojson:'https://filter.ritis.org/wzdx_v4.1/mdot.geojson',state:'MD',relay:true,m:wz},
+        {geojson:'https://smartworkzones.njit.edu/nj/wzdx',state:'NJ',relay:true,m:wz},
+        {geojson:'https://api.dx.ne-compass.com/wzdx-latest/',state:'NEC',label:'NH·VT·ME (NE Compass)',detail:['NH','VT','ME'],relay:true,m:wz},
       ];
       const layerUrl=d=>d.url||`${AGOL}/${d.svc}/FeatureServer/${d.layer||0}`;
-      const plain=async u=>{const ctl=new AbortController();const t=setTimeout(()=>ctl.abort(),15000);const r=await fetch(u,{signal:ctl.signal});clearTimeout(t);if(!r.ok)throw new Error('feed http '+r.status);const d=await r.json();return d.features||d.road_events||[];};
+      const plain=async u=>{const ctl=new AbortController();const t=setTimeout(()=>ctl.abort(),20000);const r=await fetch(u,{signal:ctl.signal});clearTimeout(t);if(!r.ok)throw new Error('feed http '+r.status);let d=await r.json();if(typeof d==='string')d=JSON.parse(d);return d.features||d.road_events||[];};
       const results=await Promise.allSettled([
-        ...defs.map(d=>d.geojson?plain(d.geojson):agol(layerUrl(d))),
+        ...defs.map(d=>d.geojson?plain(d.relay?RELAY+encodeURIComponent(d.geojson):d.geojson):agol(layerUrl(d))),
         agol(`${AGOL}/RWIS_Traffic_Data_View/FeatureServer/0`),
         agol(`${AGOL}/Traffic_Cameras_View/FeatureServer/0`)
       ]);
@@ -336,7 +340,9 @@ a{color:var(--accent)}
       if(rawEvents) for(const e of rawEvents) (e.def.detail||[e.def.state]).forEach(s=>liveStates.add(s));
       const wanted=rawEvents?[...liveStates]:FALLBACK_STATES;
       hint.textContent=`Loading GERS segments for ${wanted.length} state${wanted.length>1?'s':''}…`;
-      const detRes=await Promise.allSettled(wanted.map(s=>fetch(DETAIL_BASE+s+'.geojson').then(r=>r.json())));
+      const detRes=await Promise.allSettled(wanted.map(s=>
+        fetch(DETAIL_BASE+s+'.geojson').then(r=>{if(!r.ok)throw 0;return r.json();})
+          .catch(()=>fetch('data/detail/'+s+'.geojson').then(r=>r.json()))));
       const segFeats=[];
       detRes.forEach(r=>{ if(r.status==='fulfilled') segFeats.push(...r.value.features); });
       const segs={type:'FeatureCollection',features:segFeats};
