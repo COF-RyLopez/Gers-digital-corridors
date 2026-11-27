@@ -1,0 +1,19 @@
+PREFIX v:    <https://gers.example/def#>
+PREFIX geo:  <http://www.opengis.net/ont/geosparql#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX st:   <http://w3id.org/tripletrail/st#>
+# Wrong-carriageway check. A divided interstate is two one-way Overture segments, and the
+# tagger's nearest/buffer match does not look at direction, so a "WB" event can land on the
+# EB carriageway. For each match on a one-way segment, compare the segment's direction of
+# travel with the direction named in the event's route ("I-80 WB" -> 270 degrees).
+SELECT ?event ?route ?seg ?seg_deg ?want_deg ?off_deg (?off_deg > 90 AS ?wrong_side) WHERE {
+  ?event a v:Event ; v:route ?route ; v:gers ?seg .
+  BIND(IF(CONTAINS(?route, "EB"), 90, IF(CONTAINS(?route, "WB"), 270,
+       IF(CONTAINS(?route, "NB"), 0, IF(CONTAINS(?route, "SB"), 180, -1)))) AS ?want_deg)
+  FILTER(?want_deg >= 0)
+  ?e v:segment ?seg ; v:forward true ; v:backward false .
+  ?seg geo:hasGeometry/geo:asWKT ?w .
+  BIND(st:ST_Azimuth(st:ST_StartPoint(?w), st:ST_EndPoint(?w)) * 180 / 3.141592653589793 AS ?seg_deg)
+  BIND(ABS(?seg_deg - ?want_deg) AS ?d)
+  BIND(IF(?d > 180, 360 - ?d, ?d) AS ?off_deg)
+} GROUP BY ?event ?route ?seg ?seg_deg ?want_deg ?off_deg ORDER BY ?event

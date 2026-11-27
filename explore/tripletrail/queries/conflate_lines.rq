@@ -1,0 +1,17 @@
+PREFIX v:    <https://gers.example/def#>
+PREFIX geo:  <http://www.opengis.net/ont/geosparql#>
+PREFIX st:   <http://w3id.org/tripletrail/st#>
+PREFIX rail: <http://w3id.org/tripletrail/rail#>
+# Line events (work zones, closures) against Overture segments with rail:conflate, instead of
+# the tagger's buffer-and-intersect. Segments are the *source* so st:overlap is the share of
+# each segment that lies within 30 m of the event line, and st:distance is the discrete
+# Frechet distance between them. ?tagged says whether the DuckDB tagger matched the same pair.
+SELECT ?event ?seg ?frechet_m ?overlap ?tagged WHERE {
+  SERVICE <http://w3id.org/tripletrail/st> {
+    [] st:function rail:conflate ; st:tolerance 30 ; st:min_overlap 0.5 ;
+       st:source ?seg ; st:target ?event ; st:distance ?frechet_m ; st:overlap ?overlap .
+    { SELECT ?id ?geom WHERE { ?id a v:Segment ; geo:hasGeometry/geo:asWKT ?geom } }
+    { SELECT ?id ?geom WHERE { ?id a v:Event ; geo:hasGeometry/geo:asWKT ?geom FILTER(STRSTARTS(STR(?geom), "LINESTRING")) } }
+  }
+  BIND(EXISTS { ?event v:gers ?seg } AS ?tagged)
+} ORDER BY ?event DESC(?overlap)

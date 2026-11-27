@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Closure-aware detour</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>html,body,#m{height:100%;margin:0}body{font:14px system-ui,sans-serif}
+#k{position:absolute;z-index:999;top:10px;right:10px;background:#fff;padding:8px 12px;border-radius:6px;box-shadow:0 1px 4px #0004;max-width:280px}
+#k i{display:inline-block;width:18px;height:4px;margin-right:6px;vertical-align:middle}</style></head>
+<body><div id="m"></div><div id="k"><b>tripletrail over Overture GERS</b><br>
+<i style="background:#2563eb"></i>Fastest route (pgr_dijkstra)<br>
+<i style="background:#dc2626"></i>Detour around live I-80 WB closure<br>
+<i style="background:#f59e0b;height:8px;border-radius:4px"></i>511 events (demo snapshot)<br>
+<small>Each line is a GERS segment id + [from, to] range. Built by scripts/explore.py.</small></div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const m = L.map('m').setView([41.63, -93.6], 11);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+  {attribution: '&copy; OpenStreetMap, &copy; CARTO'}).addTo(m);
+const pop = f => Object.entries(f.properties).map(([k, v]) => `<b>${k}</b> ${v}`).join('<br>');
+const add = (url, style) => fetch(url).then(r => r.json()).then(g =>
+  L.geoJSON(g, {style, pointToLayer: (f, ll) => L.circleMarker(ll, {radius: 5, color: '#b45309', fillColor: '#f59e0b', fillOpacity: .9}),
+    onEachFeature: (f, l) => l.bindPopup(pop(f))}).addTo(m));
+add('data/detour.geojson', {color: '#dc2626', weight: 6, opacity: .8});
+add('data/route.geojson', {color: '#2563eb', weight: 3});
+add('data/events.geojson', {color: '#f59e0b', weight: 4});
+</script></body></html>

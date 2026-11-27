@@ -1,0 +1,6 @@
+PREFIX v:   <https://gers.example/def#>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+# How many (line event, segment) pairs the DuckDB tagger produced, for comparison.
+SELECT (COUNT(*) AS ?n) WHERE {
+  ?e a v:Event ; v:gers ?s ; geo:hasGeometry/geo:asWKT ?w FILTER(STRSTARTS(STR(?w), "LINESTRING"))
+}

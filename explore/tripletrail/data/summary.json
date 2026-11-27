@@ -1,0 +1,13 @@
+{
+  "wrong_side": 50,
+  "directional_matches": 122,
+  "route": "25.6 min, 90 edges on 60 GERS segments via motorway > University Avenue > Southeast University Avenue > University Avenue;East University Avenue > Southeast Boone Drive > Southeast University Avenue",
+  "detour": "28.3 min, 218 edges on 132 GERS segments via motorway > Northeast Hubbell Avenue > Hubbell Avenue > Guthrie Avenue > motorway > John MacVicar Freeway > motorway > John MacVicar Freeway > motorway > Day Street > motorway > John MacVicar Freeway",
+  "reach": 4199,
+  "bridges": 211,
+  "linear_refs": 27,
+  "conflate_pairs": 93,
+  "conflate_agree": 72,
+  "tagger_line_pairs": 108,
+  "conflate_events": 10
+}

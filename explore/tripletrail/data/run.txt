@@ -1,0 +1,21 @@
+start connector https://gers.example/e449f895-c183-4567-9ca3-d0cdac176ae2 (0 m from point)
+end   connector https://gers.example/2ed9044f-c89b-40cb-b5bd-df595aba45e0 (40 m from point)
+
+route  [101 ms]: 25.6 min, 90 edges on 60 GERS segments via motorway > University Avenue > Southeast University Avenue > University Avenue;East University Avenue > Southeast Boone Drive > Southeast University Avenue
+detour [123 ms]: 28.3 min, 218 edges on 132 GERS segments via motorway > Northeast Hubbell Avenue > Hubbell Avenue > Guthrie Avenue > motorway > John MacVicar Freeway > motorway > John MacVicar Freeway > motorway > Day Street > motorway > John MacVicar Freeway
+  segments only on the original route: 45, only on the detour: 117
+  first GERS linear references of the route:
+    2236525d-0e12-4bd0-9445-7b90662f0847  between [0.000, 1.000]
+    f3ca0c6c-73e9-409a-8b3d-9da453c57655  between [0.000, 0.255]
+    f3ca0c6c-73e9-409a-8b3d-9da453c57655  between [0.255, 0.717]
+
+upstream reach [110 ms]: 4199 connectors can reach the end point within 10 min
+bridges [60 ms]: 211 motorway/trunk segments are single points of failure in the extract
+
+linear refs [2 ms]: 27 point-event matches turned into segment id + at
+    IACARS4-82696                at=0.627  snap=198.6 m
+    IADOT-10092520214BOTH        at=0.815  snap=1.2 m
+    IADOT-15506662985BOTH        at=0.896  snap=0.3 m
+    IADOT-16677332336BOTH        at=0.990  snap=1.0 m
+conflate [74 ms]: 93 segments at least half covered by 10 line events; 72 shared with the DuckDB tagger's 108, 21 new, 36 tagger-only
+direction check [3 ms]: 50 of 122 matches to one-way segments sit on the opposite carriageway from the event's stated direction, across 11 of 24 directional events

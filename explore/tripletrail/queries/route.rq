@@ -1,0 +1,23 @@
+PREFIX v:    <https://gers.example/def#>
+PREFIX geo:  <http://www.opengis.net/ont/geosparql#>
+PREFIX geof: <http://www.opengis.net/def/function/geosparql/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX pgr:  <http://w3id.org/tripletrail/pgr#>
+PREFIX rail: <http://w3id.org/tripletrail/rail#>
+PREFIX st:   <http://w3id.org/tripletrail/st#>
+PREFIX uom:  <http://www.opengis.net/def/uom/OGC/1.0/>
+# Fastest route between two connectors over Overture segments split at connectors.
+# The result is a list of GERS linear references: segment id + [from_at, to_at].
+SELECT ?seq ?seg ?name ?class ?from_at ?to_at ?secs ?agg_secs ?wkt WHERE {
+  SERVICE <http://w3id.org/tripletrail/pgr> {
+    [] pgr:function pgr:pgr_dijkstra ; pgr:directed true ;
+       pgr:start_vid <{{START}}> ; pgr:end_vid <{{END}}> ;
+       pgr:seq ?seq ; pgr:edge ?edge ; pgr:cost ?secs ; pgr:agg_cost ?agg_secs .
+    { SELECT ?id ?source ?target ?cost ?reverse_cost WHERE {
+        ?id a v:Edge ; v:from ?source ; v:to ?target ; v:seconds ?s ; v:forward ?f ; v:backward ?b .
+        BIND(IF(?f, ?s, -1) AS ?cost) BIND(IF(?b, ?s, -1) AS ?reverse_cost)
+    } }
+  }
+  ?edge v:segment ?seg ; v:fromAt ?from_at ; v:toAt ?to_at ; geo:hasGeometry/geo:asWKT ?wkt .
+  ?seg v:class ?class . OPTIONAL { ?seg rdfs:label ?name }
+} ORDER BY ?seq

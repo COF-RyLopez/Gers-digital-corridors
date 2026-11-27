@@ -1,0 +1,20 @@
+PREFIX v:    <https://gers.example/def#>
+PREFIX geo:  <http://www.opengis.net/ont/geosparql#>
+PREFIX geof: <http://www.opengis.net/def/function/geosparql/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX pgr:  <http://w3id.org/tripletrail/pgr#>
+PREFIX rail: <http://w3id.org/tripletrail/rail#>
+PREFIX st:   <http://w3id.org/tripletrail/st#>
+PREFIX uom:  <http://www.opengis.net/def/uom/OGC/1.0/>
+# Single points of failure on the motorway + trunk network in the extract: edges whose
+# loss disconnects the network (pgr_bridges, undirected). A resilience view of a corridor.
+SELECT ?seg ?name (COUNT(?edge) AS ?edges) WHERE {
+  SERVICE <http://w3id.org/tripletrail/pgr> {
+    [] pgr:function pgr:pgr_bridges ; pgr:edge ?edge .
+    { SELECT ?id ?source ?target ?cost WHERE {
+        ?id a v:Edge ; v:segment ?s ; v:from ?source ; v:to ?target ; v:lengthM ?cost .
+        ?s v:class ?c FILTER(?c IN ("motorway", "trunk"))
+    } }
+  }
+  ?edge v:segment ?seg . OPTIONAL { ?seg rdfs:label ?name }
+} GROUP BY ?seg ?name ORDER BY DESC(?edges)
