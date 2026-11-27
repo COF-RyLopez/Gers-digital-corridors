@@ -1,0 +1,23 @@
+PREFIX v:    <https://gers.example/def#>
+PREFIX geo:  <http://www.opengis.net/ont/geosparql#>
+PREFIX geof: <http://www.opengis.net/def/function/geosparql/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX pgr:  <http://w3id.org/tripletrail/pgr#>
+PREFIX rail: <http://w3id.org/tripletrail/rail#>
+PREFIX st:   <http://w3id.org/tripletrail/st#>
+PREFIX uom:  <http://www.opengis.net/def/uom/OGC/1.0/>
+# Who is affected by an event: every connector that can reach the event's connector within
+# {{SECS}} seconds of driving. Built on the reversed graph (source/target swapped), so a
+# driving-distance search from the event walks upstream. Useful for picking which DMS signs,
+# 511 subscribers or fleet vehicles to alert.
+SELECT ?node ?agg_secs WHERE {
+  SERVICE <http://w3id.org/tripletrail/pgr> {
+    [] pgr:function pgr:pgr_drivingDistance ; pgr:directed true ;
+       pgr:start_vid <{{START}}> ; pgr:distance {{SECS}} ;
+       pgr:node ?node ; pgr:agg_cost ?agg_secs .
+    { SELECT ?id ?source ?target ?cost ?reverse_cost WHERE {
+        ?id a v:Edge ; v:from ?target ; v:to ?source ; v:seconds ?s ; v:forward ?f ; v:backward ?b .
+        BIND(IF(?f, ?s, -1) AS ?cost) BIND(IF(?b, ?s, -1) AS ?reverse_cost)
+    } }
+  }
+} ORDER BY ?agg_secs

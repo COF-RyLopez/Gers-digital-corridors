@@ -1,0 +1,18 @@
+PREFIX v:    <https://gers.example/def#>
+PREFIX geo:  <http://www.opengis.net/ont/geosparql#>
+PREFIX geof: <http://www.opengis.net/def/function/geosparql/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX pgr:  <http://w3id.org/tripletrail/pgr#>
+PREFIX rail: <http://w3id.org/tripletrail/rail#>
+PREFIX st:   <http://w3id.org/tripletrail/st#>
+PREFIX uom:  <http://www.opengis.net/def/uom/OGC/1.0/>
+# Where along its matched segment each point event sits, as Overture's 0..1 "at".
+# The tagger today emits only the segment id; this turns it into a full GERS linear
+# reference (segment id + at), which is what a downstream router or OEM needs.
+SELECT ?event ?seg ?at ?snap_m WHERE {
+  ?event a v:Event ; v:gers ?seg ; geo:hasGeometry/geo:asWKT ?p .
+  FILTER(STRSTARTS(STR(?p), "POINT"))
+  ?seg geo:hasGeometry/geo:asWKT ?line .
+  BIND(rail:intrinsicAt(?line, ?p) AS ?at)
+  BIND(geof:distance(rail:locate(?line, ?at), ?p, uom:metre) AS ?snap_m)
+} ORDER BY ?event

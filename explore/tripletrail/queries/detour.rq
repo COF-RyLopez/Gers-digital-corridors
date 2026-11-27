@@ -1,0 +1,26 @@
+PREFIX v:    <https://gers.example/def#>
+PREFIX geo:  <http://www.opengis.net/ont/geosparql#>
+PREFIX geof: <http://www.opengis.net/def/function/geosparql/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX pgr:  <http://w3id.org/tripletrail/pgr#>
+PREFIX rail: <http://w3id.org/tripletrail/rail#>
+PREFIX st:   <http://w3id.org/tripletrail/st#>
+PREFIX uom:  <http://www.opengis.net/def/uom/OGC/1.0/>
+# Same trip, but edges on any segment that a live 511 "closure" event is matched to are
+# (full closures, not "Shoulders Closed") removed from the graph (pgr:constraint over a ?c_ column). This is a closure-aware detour.
+SELECT ?seq ?seg ?name ?class ?from_at ?to_at ?secs ?agg_secs ?wkt WHERE {
+  SERVICE <http://w3id.org/tripletrail/pgr> {
+    [] pgr:function rail:route ; pgr:directed true ;
+       pgr:start_vid <{{START}}> ; pgr:end_vid <{{END}}> ;
+       pgr:constraint "!?c_closed" ;
+       pgr:seq ?seq ; pgr:edge ?edge ; pgr:cost ?secs ; pgr:agg_cost ?agg_secs .
+    { SELECT ?id ?source ?target ?cost ?reverse_cost ?c_closed WHERE {
+        ?id a v:Edge ; v:segment ?sg ; v:from ?source ; v:to ?target ; v:seconds ?s ; v:forward ?f ; v:backward ?b .
+        BIND(IF(?f, ?s, -1) AS ?cost) BIND(IF(?b, ?s, -1) AS ?reverse_cost)
+        BIND(EXISTS { ?ev a v:Event ; v:style "closure" ; v:gers ?sg ; rdfs:label ?h
+                      FILTER(!CONTAINS(LCASE(?h), "shoulder")) } AS ?c_closed)
+    } }
+  }
+  ?edge v:segment ?seg ; v:fromAt ?from_at ; v:toAt ?to_at ; geo:hasGeometry/geo:asWKT ?wkt .
+  ?seg v:class ?class . OPTIONAL { ?seg rdfs:label ?name }
+} ORDER BY ?seq

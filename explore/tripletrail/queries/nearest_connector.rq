@@ -1,0 +1,16 @@
+PREFIX v:    <https://gers.example/def#>
+PREFIX geo:  <http://www.opengis.net/ont/geosparql#>
+PREFIX geof: <http://www.opengis.net/def/function/geosparql/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX pgr:  <http://w3id.org/tripletrail/pgr#>
+PREFIX rail: <http://w3id.org/tripletrail/rail#>
+PREFIX st:   <http://w3id.org/tripletrail/st#>
+PREFIX uom:  <http://www.opengis.net/def/uom/OGC/1.0/>
+# The connector at the start of the road edge nearest to a point (ties: the edge that
+# starts closest, so a point on a connector picks the edge leaving it).
+# {{POINT}} is replaced by the driver, e.g. "POINT(-93.83 41.60)".
+SELECT ?connector ?m WHERE {
+  ?e a v:Edge ; v:from ?connector ; geo:hasGeometry/geo:asWKT ?w .
+  BIND(geof:distance(?w, "{{POINT}}"^^geo:wktLiteral, uom:metre) AS ?m)
+  BIND(geof:distance(st:ST_StartPoint(?w), "{{POINT}}"^^geo:wktLiteral, uom:metre) AS ?m_start)
+} ORDER BY ?m ?m_start LIMIT 1
