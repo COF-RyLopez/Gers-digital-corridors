@@ -34,6 +34,30 @@ def opener():
         handlers.insert(0, urllib.request.ProxyHandler({"https": proxy}))
     return urllib.request.build_opener(*handlers)
 
+_HEADINGS = {"n": 0.0, "e": 90.0, "s": 180.0, "w": 270.0}
+_HEADING_RE = re.compile(r"\b(?:([NESW])B|(north|east|south|west)[\s-]?bound)\b", re.I)
+
+def _strings(v):
+    if isinstance(v, str):
+        yield v
+    elif isinstance(v, dict):
+        for x in v.values():
+            yield from _strings(x)
+    elif isinstance(v, list):
+        for x in v:
+            yield from _strings(x)
+
+def heading_of(props, field=None):
+    """Direction of travel the event names, as a compass bearing: 'I-80 WB' -> 270,
+    WZDx direction 'northbound' -> 0. None when no direction, or more than one, is named."""
+    if field and props.get(field):
+        texts = [str(props[field])]
+        texts += [str(props[k]) for k in ("direction",) if props.get(k)]
+    else:
+        texts = list(_strings(props))
+    found = {(m.group(1) or m.group(2))[0].lower() for t in texts for m in _HEADING_RE.finditer(t)}
+    return _HEADINGS[found.pop()] if len(found) == 1 else None
+
 def fetch_events(src, op):
     """Return a list of GeoJSON features from a file, FeatureCollection URL, or ArcGIS layer."""
     if os.path.exists(src):
@@ -59,6 +83,26 @@ def route_ref(props, field):
     txt = str(props.get(field) or "") if field else " ".join(str(v) for v in props.values() if isinstance(v, str))
     m = re.search(r"\bI-?\s?(\d{1,3})\b", txt)
     return int(m.group(1)) if m else None
+
+# One-way segments, from Overture access_restrictions: travel against the segment's
+# direction denied for everyone, on the whole segment. 'forward' = travel start -> end only.
+ONEWAY_SQL = """CASE
+    WHEN EXISTS (SELECT 1 FROM (SELECT unnest(access_restrictions) AS r) WHERE {DENIED} AND r."when".heading = 'backward')
+      THEN 'forward'
+    WHEN EXISTS (SELECT 1 FROM (SELECT unnest(access_restrictions) AS r) WHERE {DENIED} AND r."when".heading = 'forward')
+      THEN 'backward' END""".replace("{DENIED}", "r.access_type = 'denied' AND r.between IS NULL AND r.\"when\".mode IS NULL "
+                                     "AND r.\"when\".using IS NULL AND r.\"when\".vehicle IS NULL")
+
+def direction_ok(at, max_off=90):
+    """SQL condition: event e may match segment s. When the event names a direction and s is
+    one-way, s's direction of travel near `at` (a point, metric coords) must be within
+    max_off degrees of it, so a WB event cannot land on the EB carriageway."""
+    f = f"ST_LineLocatePoint(s.gm, {at})"
+    piece = f"ST_LineSubstring(s.gm, greatest({f} - 50 / ST_Length(s.gm), 0), least({f} + 50 / ST_Length(s.gm), 1))"
+    brg = (f"(degrees(ST_Azimuth(ST_StartPoint({piece}), ST_EndPoint({piece})))"
+           f" + CASE WHEN s.oneway = 'backward' THEN 180 ELSE 0 END)")
+    off = f"abs(((({brg} - e.heading) % 360) + 540) % 360 - 180)"
+    return f"(e.heading IS NULL OR s.oneway IS NULL OR {off} <= {max_off})"
 
 def list_release_files(op, release):
     prefix = f"release/{release}/theme%3Dtransportation/type%3Dsegment/"
@@ -126,6 +170,13 @@ def main():
     con.execute(f"CREATE TABLE ev AS SELECT * FROM read_json('{a.out}/_ev.json', format='array')")
     con.execute("ALTER TABLE ev ADD COLUMN geometry GEOMETRY")
     con.execute("UPDATE ev SET geometry = ST_GeomFromGeoJSON(geom)")
+    heads = [{"hidx": i, "heading": heading_of(f.get("properties") or {}, a.route_field)}
+             for i, f in enumerate(feats)]
+    json.dump(heads, open(f"{a.out}/_hd.json", "w"))
+    con.execute(f"""CREATE TABLE hd AS SELECT * FROM read_json('{a.out}/_hd.json', format='array',
+                columns={{'hidx': 'INTEGER', 'heading': 'DOUBLE'}})""")
+    con.execute("ALTER TABLE ev ADD COLUMN heading DOUBLE")
+    con.execute("UPDATE ev SET heading = hd.heading FROM hd WHERE ev.idx = hd.hidx")
     ext_q = con.execute("SELECT min(ST_XMin(geometry)), max(ST_XMax(geometry)), min(ST_YMin(geometry)), max(ST_YMax(geometry)) FROM ev").fetchone()
     x0, x1, y0, y1 = ext_q[0]-a.margin, ext_q[1]+a.margin, ext_q[2]-a.margin, ext_q[3]+a.margin
     print(f"{len(rows)} events | extent {x0:.2f},{y0:.2f} .. {x1:.2f},{y1:.2f}")
@@ -142,12 +193,17 @@ def main():
             SELECT id, names.primary AS name, class,
               CASE WHEN routes IS NOT NULL AND len(routes)>0
                    THEN routes[1].network || ' ' || routes[1].ref END AS route_ref,
+              {ONEWAY_SQL} AS oneway,
               geometry
             FROM read_parquet({ulist})
             WHERE subtype='road' AND class IN ({classes})
               AND (subclass IS NULL OR subclass NOT IN ('link'))
               AND bbox.xmin BETWEEN {x0} AND {x1} AND bbox.ymin BETWEEN {y0} AND {y1}""")
-        con.execute(f"COPY (SELECT id,name,class,route_ref, ST_AsGeoJSON(geometry) AS geom FROM seg) TO '{a.out}/segments.parquet'")
+        con.execute(f"COPY (SELECT id,name,class,route_ref,oneway, ST_AsGeoJSON(geometry) AS geom FROM seg) TO '{a.out}/segments.parquet'")
+    if "oneway" not in [r[0] for r in con.execute("DESCRIBE seg").fetchall()]:
+        print("note: segment cache has no 'oneway' column (older cache); direction check is off. "
+              "Re-fetch without --segments to enable it.")
+        con.execute("ALTER TABLE seg ADD COLUMN oneway VARCHAR")
     nseg = con.execute("SELECT count(*) FROM seg").fetchone()[0]
     print(f"{nseg} candidate segments")
 
@@ -161,7 +217,7 @@ def main():
             row_number() OVER (PARTITION BY e.idx ORDER BY
               CASE WHEN e.iref IS NOT NULL AND s.route_ref = 'US:I ' || e.iref THEN 0 ELSE 1 END,
               ST_Distance(e.gm,s.gm)) rk
-          FROM ev e JOIN seg s ON ST_DWithin(e.gm,s.gm,{a.max_snap})
+          FROM ev e JOIN seg s ON ST_DWithin(e.gm,s.gm,{a.max_snap}) AND {direction_ok('e.gm')}
           WHERE ST_GeometryType(e.geometry)::VARCHAR='POINT') WHERE rk=1""").fetchall()
     ln = con.execute(f"""
         SELECT idx, gers_id, overlap_m, route_agree FROM (
@@ -169,7 +225,8 @@ def main():
             ST_Length(ST_Intersection(ST_Buffer(e.gm,{a.line_buffer}),s.gm)) AS overlap_m,
             (e.iref IS NOT NULL AND s.route_ref = 'US:I ' || e.iref) AS route_agree
           FROM ev e JOIN seg s ON ST_DWithin(e.gm,s.gm,{a.line_buffer+5})
-          WHERE ST_GeometryType(e.geometry)::VARCHAR LIKE '%LINESTRING')
+          WHERE ST_GeometryType(e.geometry)::VARCHAR LIKE '%LINESTRING'
+            AND {direction_ok(f"ST_Centroid(ST_Intersection(ST_Buffer(e.gm,{a.line_buffer}),s.gm))")})
         WHERE overlap_m > {a.min_overlap}""").fetchall()
 
     refs = {}
@@ -192,9 +249,11 @@ def main():
               "point_matches": len(pt), "line_segment_refs": len(ln),
               "median_snap_m": round(statistics.median(snaps), 1) if snaps else None,
               "route_consistent_points": sum(1 for r in pt if r[3]),
+              "events_with_direction": sum(1 for h in heads if h["heading"] is not None),
               "overture_release": a.release}
     json.dump(report, open(f"{a.out}/report.json", "w"), indent=2)
     os.remove(f"{a.out}/_ev.json")
+    os.remove(f"{a.out}/_hd.json")
     print(json.dumps(report, indent=2))
 
 if __name__ == "__main__":
